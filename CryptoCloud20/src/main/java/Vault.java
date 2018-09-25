@@ -56,7 +56,6 @@ class Vault {
 	}
 
 	static void initPersonalStorage(Caller caller) {
-		//TODO test enc-dec
 		if (personalVault == null) {
 			try{
 				final Path PERSONAL_FOLDER = BASE_PATH.resolve("PersonalFolder");
@@ -101,13 +100,6 @@ class Vault {
 			Main.success("initPersonalStorage");
 		}
 
-	}
-
-	Path getPathPassword() {
-		if (pathPassword == null) {
-			throw new IllegalStateException("PathPassword not initialized.");
-		}
-		return pathPassword;
 	}
 
 	Path getPathStorage() {

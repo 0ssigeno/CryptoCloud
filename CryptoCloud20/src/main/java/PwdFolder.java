@@ -124,7 +124,7 @@ public class PwdFolder {
 	}
 
 	//TODO TEST
-	private boolean checkIfRemove(Group group, User user) {
+	boolean checkIfRemove(Group group, User user) {
 		List<Group> groups = new ArrayList<>();
 		if (this.getOwner().equals(user)) {
 			return false;
@@ -147,7 +147,9 @@ public class PwdFolder {
 		userList.forEach(user -> {
 
 			if (checkIfRemove(group, user)) {
+
 				try {
+
 					//remove access members
 					Dropbox.removeUsersFromFolder(Dropbox.BASE.resolve(name), Collections.singletonList(user));
 
@@ -194,8 +196,9 @@ public class PwdFolder {
 				System.out.println(pair.getValue0().getOwner());
 
 			});
-			//TODO fix
-			Thread.sleep(2000);
+			//sleep because dropbox is strange: if you unshare a folder, the folder is deleted and then recreated
+			//so you have to dropbox to complemete its operation before you can really delete the folder
+			Thread.sleep(1000);
 			Dropbox.getClient().files().deleteV2(Dropbox.BASE.resolve(name).toString());
 			if (fileSystem != null) {
 				Files.deleteIfExists(fileSystem.getPath(Vault.MY_PWDFOLDER.resolve(name).toString()));
@@ -218,7 +221,22 @@ public class PwdFolder {
 
 	}
 
-	public static class PwdFolderBuilder {
+	void open() {
+		try {
+			System.out.println(this.vault.getPassword());
+			System.out.println(this.vault.getPathStorage());
+			FileSystem fileSystem = this.vault.open();
+			if (fileSystem != null) {
+				//TODO
+				fileSystem.close();
+			}
+
+		} catch (IOException e) {
+			throw new Main.ExecutionException("open", e, this);
+		}
+	}
+
+	static class PwdFolderBuilder {
 		private final String name;
 		private User owner;
 		private Vault vault;
@@ -260,7 +278,7 @@ public class PwdFolder {
 
 					});
 
-					this.vault = new Vault(Vault.SLASH.resolve(this.name)).setPassword(jsonObject.get(Notify.TypeMemberName.PASSWORD.toString()).getAsString());
+					this.vault = new Vault(Vault.BASE_PATH.resolve(this.name)).setPassword(jsonObject.get(Notify.TypeMemberName.PASSWORD.toString()).getAsString());
 					fileSystem.close();
 				} else {
 					throw new Main.ExecutionException("setFromDropbox");
@@ -281,6 +299,7 @@ public class PwdFolder {
 							throw new Main.ExecutionException("setFromDropbox", e, this);
 						}
 					}).findFirst();
+
 					if (foundDirectory.isPresent()) {
 						try {
 							JsonObject jsonObject = parser.parse(new String(Files.readAllBytes(
@@ -313,7 +332,7 @@ public class PwdFolder {
 			return this;
 		}
 
-		public PwdFolder build() {
+		PwdFolder build() {
 			return new PwdFolder(this);
 		}
 	}

@@ -83,14 +83,7 @@ public class Group {
 			//remove folder nella vault
 			FileSystem fileSystem = Vault.getPersonalVault().open();
 			if (fileSystem != null) {
-				Files.list(fileSystem.getPath(Vault.SLASH.resolve(this.name).toString())).forEach(path -> {
-					try {
-						Files.deleteIfExists(path);
-					} catch (IOException e) {
-						throw new Main.ExecutionException("delete");
-					}
-				});
-				Files.deleteIfExists(fileSystem.getPath(Vault.SLASH.resolve(this.name).toString())); //todo check, forse vuole prima la rimozione interna
+				Main.deleteDirectory(Vault.SLASH.resolve(this.name));
 				fileSystem.close();
 			} else {
 				throw new Main.ExecutionException("delete");
@@ -127,8 +120,8 @@ public class Group {
 		return this;
 	}
 
+	//TODO TEST
 	Group warnAdded(List<User> newUsers) {
-		//TODO CHECK
 		//invia una notifica ad ogni owner di ogni pwdFolder che è condiviso con il gruppo
 		pwdFoldersShared().forEach(pwdFolder ->
 				new Notify().setUsersAddedOrRemoved(this, pwdFolder, newUsers, Notify.TypeNotification.USERS_ADDED_TO_GROUP)
@@ -159,8 +152,9 @@ public class Group {
 		}
 	}
 
+	//TODO TEST
 	Group warnRemoved(List<User> exUsers) {
-		//TODO CHECK
+
 		//invia una notifica ad ogni owner di ogni pwdFolder che è condiviso con il gruppo
 		pwdFoldersShared().forEach(pwdFolder ->
 				new Notify().setUsersAddedOrRemoved(this, pwdFolder, exUsers, Notify.TypeNotification.USERS_REMOVED_FROM_GROUP)
@@ -181,7 +175,7 @@ public class Group {
 
 	}
 
-	public static class GroupBuilder {
+	static class GroupBuilder {
 		private final String name;
 		private User owner;
 		private List<User> members;
@@ -218,11 +212,11 @@ public class Group {
 		GroupBuilder setFromDropbox() {
 			try {
 				//prima parte: firma dell'owner sul file info
-				Path signatureFile = Dropbox.download(Dropbox.SIGNED_GROUPS, name, Main.END_SIGNED);
-				byte[] signature = Files.readAllBytes(signatureFile);
 				Path infoFile = Dropbox.download(Dropbox.GROUPS_COMPOSITION, name, "");
 				byte[] info = Files.readAllBytes(infoFile);
 				setAttributes(infoFile);
+				Path signatureFile = Dropbox.download(Dropbox.SIGNED_GROUPS, name, Main.END_SIGNED);
+				byte[] signature = Files.readAllBytes(signatureFile);
 				Boolean verified = Main.verifyPkcs1Signature(owner.getPublicKey(), info, signature);
 				if (verified) {
 					try {
@@ -238,12 +232,12 @@ public class Group {
 
 				}
 			} catch (IOException | DbxException e) {
-				throw new Main.ExecutionException("setFromDropbox", e, this);
+				verified = false;
 			}
 			return this;
 		}
 
-		public Group build() {
+		Group build() {
 			return new Group(this);
 		}
 	}
