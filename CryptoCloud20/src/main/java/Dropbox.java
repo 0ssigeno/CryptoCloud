@@ -44,8 +44,8 @@ public class Dropbox {
 	static void initDropboxClient() {
 		if (client == null) {
 			//TODO offuscare dati
-			final String KEY_INFO = "x";
-			final String SECRET_INFO = "x";
+			final String KEY_INFO = "kh0d9rkompntepp";
+			final String SECRET_INFO = "vsua8l868wd0xtn";
 			Path url = Main.MY_PERSONAL_PATH.resolve("DropBoxToken.json").toAbsolutePath();
 			DbxRequestConfig requestConfig = new DbxRequestConfig("CryptoClouds");
 
