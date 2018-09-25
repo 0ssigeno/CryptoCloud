@@ -2,10 +2,18 @@ import com.dropbox.core.DbxException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -102,11 +110,28 @@ public class Group {
 		return jsonObject;
 	}
 
+	private byte[] encrypt(byte[] bytes) {
+		try {
+			byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+			IvParameterSpec ivspec = new IvParameterSpec(iv);
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			cipher.init(Cipher.ENCRYPT_MODE, Main.getSecretkey(), ivspec);
+			return cipher.doFinal(bytes);
+
+		} catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException e) {
+			throw new Main.ExecutionException("encrypt", e);
+		}
+
+	}
+
 	Group upload(Caller caller) {
 		try {
 			if (caller.equals(this.owner)) {
 				byte[] infoByte = toJSON().toString().getBytes();
-				Path info = Files.write(Main.MY_TEMP_PATH.resolve(this.name), infoByte);
+				byte[] encrypted = encrypt(infoByte);
+				Path info = Files.write(Main.MY_TEMP_PATH.resolve(this.name), encrypted);
+
+
 				Path sign = Files.write(Main.MY_TEMP_PATH.resolve(this.name + Main.END_SIGNED),
 						caller.generatePkcs1Signature(owner.getPrivateKey(), infoByte));
 				Dropbox.upload(info, Dropbox.GROUPS_COMPOSITION.resolve(info.getFileName()));
@@ -193,28 +218,24 @@ public class Group {
 			//	this.sign=null;
 		}
 
-		private void setAttributes(Path path) {
-			try {
+		private void setAttributes(byte[] content) {
 				JsonParser parser = new JsonParser();
-				JsonObject jsonObject = parser.parse(new String(Files.readAllBytes(path))).getAsJsonObject();
+			JsonObject jsonObject = parser.parse(new String(content)).getAsJsonObject();
 				this.owner = new User
 						.UserBuilder(jsonObject.get(Notify.TypeMemberName.OWNER.toString()).getAsString())
 						.setPublicKey().setVerified().build();
 				this.members = new ArrayList<>();
 				jsonObject.getAsJsonArray(Notify.TypeMemberName.MEMBERS.toString()).forEach(single ->
 						this.members.add(new User.UserBuilder(single.getAsString()).build()));
-			} catch (IOException e) {
-				throw new Main.ExecutionException("setAttributes", e, this);
-			}
-
 		}
 
 		GroupBuilder setFromDropbox() {
 			try {
 				//prima parte: firma dell'owner sul file info
 				Path infoFile = Dropbox.download(Dropbox.GROUPS_COMPOSITION, name, "");
-				byte[] info = Files.readAllBytes(infoFile);
-				setAttributes(infoFile);
+				byte[] info = decrypt(Files.readAllBytes(infoFile));
+
+				setAttributes(info);
 				Path signatureFile = Dropbox.download(Dropbox.SIGNED_GROUPS, name, Main.END_SIGNED);
 				byte[] signature = Files.readAllBytes(signatureFile);
 				Boolean verified = Main.verifyPkcs1Signature(owner.getPublicKey(), info, signature);
@@ -235,6 +256,21 @@ public class Group {
 				verified = false;
 			}
 			return this;
+		}
+
+		private byte[] decrypt(byte[] bytes) {
+			try {
+				byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+				IvParameterSpec ivspec = new IvParameterSpec(iv);
+
+				Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+				cipher.init(Cipher.DECRYPT_MODE, Main.getSecretkey(), ivspec);
+				return cipher.doFinal(bytes);
+
+			} catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException e) {
+				throw new Main.ExecutionException("decrypt", e);
+			}
+
 		}
 
 		Group build() {

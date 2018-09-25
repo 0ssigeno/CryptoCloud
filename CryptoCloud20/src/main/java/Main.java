@@ -1,11 +1,14 @@
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.PublicKey;
-import java.security.Signature;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 
 public class Main {
 	final static Path MY_TEMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
@@ -16,6 +19,28 @@ public class Main {
 	final static String END_SIGNED = ".sign";
 	final static String END_ADMIN = ".admin";
 
+	private static SecretKey secretkey;
+
+	public static SecretKey getSecretkey() {
+		if (secretkey == null) {
+			throw new IllegalStateException("SecretKey not initialized.");
+		}
+		return secretkey;
+	}
+
+	//this is not used for security but to avoid users to mess with files in the dropbox folders
+	private static void initSecretKey() {
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+
+		byte[] key = "OssigenoCryptoCloudSimon".getBytes();
+		SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+		try {
+			secretkey = SecretKeyFactory.getInstance("AES", "BC").generateSecret(keySpec);
+		} catch (InvalidKeySpecException | NoSuchProviderException | NoSuchAlgorithmException e) {
+			throw new ExecutionException("initSecretKey", e);
+		}
+
+	}
 
 	static void success(String nameFunction) {
 		System.out.println("Function " + nameFunction + " completed with success.");
@@ -78,8 +103,11 @@ public class Main {
 		}
 
 	}
+
 	public static void main(String args[]) {
+
 		Dropbox.initDropboxClient();
+		initSecretKey();
 		Caller caller = new Caller(new User.UserBuilder(Dropbox.getCallerEmail()).setCaller());
 		System.out.println("press 0 for admin, 1 for user");
 		int value = Integer.valueOf(Main.inputUser());
@@ -216,6 +244,7 @@ public class Main {
 		System.out.println("exit");
 
 	}
+
 	static class ExecutionException extends RuntimeException {
 		ExecutionException(String functionName) {
 			super("Unable to execute function " + functionName);

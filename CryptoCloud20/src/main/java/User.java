@@ -193,7 +193,6 @@ public class User {
 		UserBuilder setCaller() {
 			Path publicKeyPath = Main.MY_PERSONAL_PATH.resolve(email + Main.END_PUBLIC);
 			Path privateKeyPath = Main.MY_PERSONAL_PATH.resolve(email + Main.END_PRIVATE);
-			Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
 			try {
 				publicKey = importPublic(publicKeyPath);
