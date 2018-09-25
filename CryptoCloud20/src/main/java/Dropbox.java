@@ -23,13 +23,13 @@ public class Dropbox {
 	static final int CHUNKED_UPLOAD_MAX_ATTEMPTS = 5;
 	final static Path BASE = Paths.get("/");
 	final static Path SYSTEM = Paths.get("/System");
+	final static Path GROUPS_COMPOSITION = SYSTEM.resolve("GroupsComposition");
 	final static Path PUBLIC_KEYS = SYSTEM.resolve("PublicKeys");
 	final static Path SIGNED_GROUPS = SYSTEM.resolve("SignedGroups");
-	final static Path GROUPS_COMPOSITION = SYSTEM.resolve("GroupsComposition");
+	private static final long CHUNKED_UPLOAD_CHUNK_SIZE = 8L << 20; // 8MiB
 	final static Path MESSAGE_PASSING = SYSTEM.resolve("MessagePassing");
 	final static Path SIGNED_PUBLIC_KEYS = Paths.get("/SignedKeys");
 	final static Path SIGNED_GROUPS_OWNER = Paths.get("/SignedGroupsOwner");
-	private static final long CHUNKED_UPLOAD_CHUNK_SIZE = 8L << 20; // 8MiB
 
 	private static String callerEmail;
 	private static DbxClientV2 client;
@@ -189,6 +189,7 @@ public class Dropbox {
 	}
 
 
+
 	static String getSharedFolderId(Path path) throws DbxException {
 		return ((FolderMetadata) client.files().getMetadata(path.toString())).getSharedFolderId();
 	}
@@ -254,7 +255,7 @@ public class Dropbox {
 
 	static void removeUsersFromFolder(Path path, List<User> users) throws DbxException {
 		if (client.files().getMetadata(path.toString()).toString().contains("shared_folder_id")) {
-			users.forEach(user-> {
+			users.forEach(user -> {
 				try {
 					client.sharing().removeFolderMember(getSharedFolderId(path),
 							MemberSelector.email(user.getEmail()),false);

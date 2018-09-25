@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class Caller extends User {
+class Caller extends User {
 	private static PublicKey adminPublicKey;
 	private static Path adminMP;
 
@@ -31,7 +31,6 @@ public class Caller extends User {
 			adminPublicKey = importPublic(path);
 			Main.deleteLocalFiles(path);
 		} catch (IOException | DbxException e) {
-			e.printStackTrace();
 			adminPublicKey = null;
 		}
 		adminMP = Dropbox.MESSAGE_PASSING.resolve("admin");
@@ -80,7 +79,7 @@ public class Caller extends User {
 		}
 	}
 
-	public void reCreateKeys() {
+	void reCreateKeys() {
 		//TODO TEST
 		Path publicKeyPath = Main.MY_PERSONAL_PATH.resolve(getEmail() + Main.END_PUBLIC);
 		Path privateKeyPath = Main.MY_PERSONAL_PATH.resolve(getEmail() + Main.END_PRIVATE);
@@ -121,7 +120,7 @@ public class Caller extends User {
 				notify.getGroupRemoved();
 				if (!Dropbox.existFile(Dropbox.GROUPS_COMPOSITION.resolve(notify.getGroup().getName()))) {
 					if (this instanceof Admin) {
-						((Admin) this).answerGroupRemoved(notify.getGroup());
+						((Admin) this).designGroup(notify.getGroup());
 
 					} else {
 						answerGroupRemoved(notify.getGroup(), notify.getUser(), notify.getPwdFolder());
@@ -199,23 +198,22 @@ public class Caller extends User {
 		}
 	}
 
+
 	private void answerGroupRemoved(Group group, User user, PwdFolder pwdFolder) {
 		try {
-			Optional<Pair<Group, AccessLevel>> test = pwdFolder.getGroupsAccesses().stream().filter(pair ->
-					pair.getValue0().equals(group)).findFirst(); //todo check lambda
-			test.ifPresent(pair ->
+			Optional<Pair<Group, AccessLevel>> groupAccessLevel = pwdFolder.getGroupsAccesses().stream().filter(pair ->
+					pair.getValue0().equals(group)).findFirst();
+			groupAccessLevel.ifPresent(pair ->
 					pwdFolder.getGroupsAccesses().remove(pair));
-
-			Dropbox.removeUsersFromFolder(Dropbox.BASE.resolve(pwdFolder.getName()), Collections.singletonList(user));
+			if (pwdFolder.checkIfRemove(group, user)) {
+				Dropbox.removeUsersFromFolder(Dropbox.BASE.resolve(pwdFolder.getName()), Collections.singletonList(user));
+			}
 		} catch (DbxException e) {
-			throw new Main.ExecutionException("answerGroupRemoved", e, this);
+			throw new Main.ExecutionException("designGroup", e, this);
 		}
 	}
 
 	private void answerPwdFolderRemoved(Group group, PwdFolder pwdFolder) {
-		//TODO la vera condizione è: se sei membro di un altro gruppo  che ha comunque l'accesso al pwdfolder
-		//if(!Dropbox.existFile(Dropbox.BASE.resolve(pwdFolder.getName()))){
-		//TODO devo pure fare l'unmount?
 		try {
 			FileSystem fileSystem = Vault.getPersonalVault().open();
 			if (fileSystem != null) {
@@ -228,9 +226,7 @@ public class Caller extends User {
 		} catch (IOException e) {
 			throw new Main.ExecutionException("answerPwdFolderRemoved", e, this);
 		}
-		//}else{
-		//		System.err.println("You still have access to the PwdFolder");
-		//	}
+
 	}
 
 	private void answerPwdFolderShared(PwdFolder pwdFolder, Group group, AccessLevel accessLevel, String password) {
@@ -404,6 +400,20 @@ public class Caller extends User {
 		return pairs;
 	}
 
+
+	void openPwdFolder() {
+		System.out.println("Enter the name you chose for the PwdFolder");
+		System.out.println("These are the PwdFolder that you own");
+		List<PwdFolder> pwdFolders = listPwdFolders();
+		pwdFolders.forEach(System.out::println);
+		String name = Main.inputUser();
+		PwdFolder pwdFolder = new PwdFolder.PwdFolderBuilder(name).setFromDropbox().build();
+		if (pwdFolders.contains(pwdFolder)) {
+			pwdFolder.open();
+		} else {
+			System.err.println("Operation not permitted");
+		}
+	}
 	void removeGroupsFromPwdFolder() {
 		System.out.println("Enter the name you chose for the PwdFolder");
 		System.out.println("These are the PwdFolder that you own");
@@ -479,7 +489,7 @@ public class Caller extends User {
 	}
 
 
-	public void createGroup() {
+	void createGroup() {
 		System.out.println("Enter a name for the Group");
 		List<User> members;
 		String name = Main.inputUser();
@@ -497,24 +507,29 @@ public class Caller extends User {
 		group.upload(this).localDelete();
 	}
 
-	public void addMembersToGroup() {
+	//TODO TEST
+	void addMembersToGroup() {
 		System.out.println("Enter the name you chose for the Group");
 		System.out.println("These are the Groups created");
 		listGroups().forEach(System.out::println);
 		String name = Main.inputUser();
 		Group group = new Group.GroupBuilder(name).setFromDropbox().build();
-		if (group.getVerified() && this.equals(group.getOwner())) {
-			//TODO check
-			List<User> canBeAdded = listUsers();
-			canBeAdded.removeAll(group.getMembers());
-			System.out.println("Please insert the emails of the users you want to add, press 'q' to stop");
-			System.out.println("These are the Users that can be added");
+		if (group.getVerified()) {
+			if (this.equals(group.getOwner())) {
+				List<User> canBeAdded = listUsers();
+				canBeAdded.removeAll(group.getMembers());
+				System.out.println("Please insert the emails of the users you want to add, press 'q' to stop");
+				System.out.println("These are the Users that can be added");
 
-			canBeAdded.forEach(System.out::println);
+				canBeAdded.forEach(System.out::println);
 
-			List<User> newMembers = insertUsersInList(group.getMembers());
-			group.getMembers().addAll(newMembers);
-			group.upload(this).warnAdded(newMembers).localDelete();
+				List<User> newMembers = insertUsersInList(group.getMembers());
+				group.getMembers().addAll(newMembers);
+				group.upload(this).warnAdded(newMembers).localDelete();
+			} else {
+				System.err.println("You are not owner of the Group");
+
+			}
 		} else {
 			System.err.println("The Group is not verified by an Admin");
 
@@ -556,14 +571,13 @@ public class Caller extends User {
 	}
 
 
-	//TODO TEST
-	public void deleteGroup() {
+	void deleteGroup() {
 		System.out.println("Enter the name you chose for the Group");
 		System.out.println("These are the Groups created");
 		listGroups().forEach(System.out::println);
 		String name = Main.inputUser();
 		Group group = new Group.GroupBuilder(name).setFromDropbox().build();
-		if (group.getVerified() && this.equals(group.getOwner())) {
+		if (group.getVerified()) {
 			if (this.equals(group.getOwner())) {
 				if (group.getMembers().isEmpty()) {
 					group.delete().localDelete();
@@ -581,17 +595,17 @@ public class Caller extends User {
 
 	}
 
-	public void removeMembersFromGroup() {
+	//TODO TEST
+	void removeMembersFromGroup() {
 		System.out.println("Enter the name you chose for the Group");
 		System.out.println("These are the Groups created");
 		listGroups().forEach(System.out::println);
 		String name = Main.inputUser();
 		Group group = new Group.GroupBuilder(name).setFromDropbox().build();
-		if (group.getVerified() && this.equals(group.getOwner())) {
+		if (group.getVerified()) {
 			if (this.equals(group.getOwner())) {
 				System.out.println("Please insert the emails of the users you want to remove, press 'q' to stop");
 				group.getMembers().forEach(System.out::println);
-				//TODO check
 				List<User> exMembers = removeUsersInList(group.getMembers());
 				group.getMembers().removeAll(exMembers);
 				group.upload(this).warnRemoved(exMembers).localDelete();
@@ -636,7 +650,7 @@ public class Caller extends User {
 	}
 
 
-	private List<PwdFolder> listPwdFolders() {
+	List<PwdFolder> listPwdFolders() {
 		try {
 			List<PwdFolder> pwdFolders = new ArrayList<>();
 			FileSystem fileSystem = Vault.getPersonalVault().open();
@@ -694,7 +708,7 @@ public class Caller extends User {
 	}
 
 
-	private void createFileSystem() {
+	void createFileSystem() {
 		try {
 			Dropbox.mountFolder(Dropbox.SYSTEM.getFileName());
 			Dropbox.mountFolder(Dropbox.SIGNED_PUBLIC_KEYS.getFileName());

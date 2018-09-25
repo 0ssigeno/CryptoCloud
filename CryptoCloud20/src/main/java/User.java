@@ -50,12 +50,12 @@ public class User {
 
 	}
 
-	static PublicKey importPublic(Path path) {
+	static PublicKey importPublic(Path path) throws IOException {
 		try {
 			KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
 			return keyFact.generatePublic(new X509EncodedKeySpec(Files.readAllBytes(path)));
 		} catch (NoSuchAlgorithmException | NoSuchProviderException |
-				InvalidKeySpecException | IOException e) {
+				InvalidKeySpecException e) {
 			throw new Main.ExecutionException("importPublic", e);
 		}
 
@@ -107,6 +107,13 @@ public class User {
 		return publicKey;
 	}
 
+	void removePublicKey() {
+		try {
+			Dropbox.getClient().files().deleteV2(Dropbox.PUBLIC_KEYS.resolve(this.email + Main.END_PUBLIC).toString());
+		} catch (DbxException e) {
+			throw new Main.ExecutionException("removePublicKey", e, this);
+		}
+	}
 	void setPublicKey(PublicKey publicKey) {
 		this.publicKey = publicKey;
 	}
@@ -189,9 +196,14 @@ public class User {
 			Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
 			try {
-				publicKey = importPublic(Dropbox.download(Dropbox.PUBLIC_KEYS, email, Main.END_PUBLIC));
-			} catch (IOException | DbxException e) {
-				System.out.println("Creating your Keys");
+				publicKey = importPublic(publicKeyPath);
+			} catch (IOException e) {
+				System.out.println("Can't find locally, trying to download it");
+				try {
+					publicKey = importPublic(Dropbox.download(Dropbox.PUBLIC_KEYS, email, Main.END_PUBLIC));
+				} catch (IOException | DbxException e1) {
+					System.out.println("Can't find even online, creating them");
+				}
 			}
 
 			if (publicKey != null && Files.exists(privateKeyPath)) {
@@ -209,7 +221,7 @@ public class User {
 		}
 
 
-		public User build() {
+		User build() {
 			return new User(this);
 		}
 

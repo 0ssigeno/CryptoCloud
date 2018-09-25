@@ -64,34 +64,12 @@ class Notify {
 		return group;
 	}
 
-	JsonObject getJsonObject() {
-		if (jsonObject == null) {
-			throw new IllegalStateException("JsonObject not initialized.");
-		}
-		return jsonObject;
-	}
-
 	User getUser() {
 		if (user == null) {
 			throw new IllegalStateException("User not initialized.");
 		}
 		return user;
 	}
-
-	Path getLocalPath() {
-		if (localPath == null) {
-			throw new IllegalStateException("LocalPath not initialized.");
-		}
-		return localPath;
-	}
-
-	byte[] getContent() {
-		if (content == null) {
-			throw new IllegalStateException("Content not initialized.");
-		}
-		return content;
-	}
-
 	TypeNotification getTypeNotification() {
 		if (typeNotification == null) {
 			throw new IllegalStateException("Type not initialized.");
@@ -178,15 +156,13 @@ class Notify {
 		this.pwdFolder = new PwdFolder.PwdFolderBuilder(pwdFolderName).build();
 	}
 
-	Notify getGroupRemoved() {
+	void getGroupRemoved() {
 		String groupName = jsonObject.get(TypeMemberName.GROUP.toString()).getAsString();
 		this.group = new Group.GroupBuilder(groupName).build();
 		this.user = new User.UserBuilder(jsonObject.get(TypeMemberName.OWNER.toString()).getAsString()).setPublicKey().setVerified().build();
 		if (jsonObject.has(TypeMemberName.PWDFOLDER.toString())) {
-			System.err.println("CIAO" + jsonObject.get(TypeMemberName.PWDFOLDER.toString()).getAsString());
 			this.pwdFolder = new PwdFolder.PwdFolderBuilder(jsonObject.get(TypeMemberName.PWDFOLDER.toString()).getAsString()).setFromDropbox().build();
 		}
-		return this;
 	}
 
 	//UPLOAD SIDE

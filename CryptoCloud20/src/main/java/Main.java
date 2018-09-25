@@ -63,29 +63,159 @@ public class Main {
 
 	}
 
+	static void deleteDirectory(Path path) {
+		try {
+			Files.list(path).forEach(pathInternal -> {
+				try {
+					Files.deleteIfExists(pathInternal);
+				} catch (IOException e) {
+					throw new Main.ExecutionException("delete");
+				}
+			});
+			Files.deleteIfExists(path);
+		} catch (IOException e) {
+			throw new Main.ExecutionException("deleteDirectory");
+		}
+
+	}
 	public static void main(String args[]) {
 		Dropbox.initDropboxClient();
 		Caller caller = new Caller(new User.UserBuilder(Dropbox.getCallerEmail()).setCaller());
-		Vault.initPersonalStorage(caller);
-		if (Dropbox.checkIfAdmin() != 0) {
+		System.out.println("press 0 for admin, 1 for user");
+		int value = Integer.valueOf(Main.inputUser());
+		if (Dropbox.checkIfAdmin() != value) { //settare 0
 			Admin admin = new Admin(caller);
 			admin.setup();
-
-			admin.createGroup();
-			admin.createPwdFolder();
-
-			System.exit(0);
-
+			manageInput(admin);
 		} else {
 			caller.setup();
-			caller.deleteGroup();
-			System.exit(0);
-
+			manageInput(caller);
 		}
-
+		System.exit(1);
 
 	}
 
+	private static void manageInput(Caller caller) {
+		String input = inputUser();
+		while (!input.equals("exit")) {
+			if (caller instanceof Admin) {
+				switch (input) {
+					case "help":
+						help(caller);
+						break;
+					case "signUser":
+						((Admin) caller).signUser();
+						break;
+					case "removeSignUser":
+						((Admin) caller).designUser();
+						break;
+					case "signGroup":
+						((Admin) caller).signGroup();
+						break;
+					case "removeSignGroup":
+						((Admin) caller).designGroup();
+						break;
+					case "addUsersToFileSystem":
+						((Admin) caller).addUsersToFileSystem();
+						break;
+					case "removeUsersFromFileSystem":
+						((Admin) caller).removeUsersFromFileSystem();
+						break;
+					default:
+						System.err.println("Command not recognized");
+
+				}
+
+			} else {
+				if (caller.getVerified()) {
+					switch (input) {
+						case "help":
+							help(caller);
+							break;
+						case "recreateKeys":
+							caller.reCreateKeys();
+							break;
+						case "mountSystem":
+							caller.createFileSystem();
+							break;
+						case "listUsers":
+							caller.listUsers().forEach(System.out::println);
+							break;
+						case "listGroups":
+							caller.listGroups().forEach(System.out::println);
+							break;
+						case "listOwningPwdFolders":
+							caller.listPwdFolders().forEach(System.out::println);
+							break;
+						case "createGroup":
+							caller.createGroup();
+							break;
+						case "addMembersToGroup":
+							caller.addMembersToGroup();
+							break;
+						case "removeMembersFromGroup":
+							caller.removeMembersFromGroup();
+							break;
+						case "deleteGroup":
+							caller.deleteGroup();
+							break;
+						case "createPwdFolder":
+							caller.createPwdFolder();
+							break;
+						case "addGroupsToPwdFolder":
+							caller.addGroupsToPwdFolder();
+							break;
+						case "removeGroupsFromPwdFolder":
+							caller.removeGroupsFromPwdFolder();
+							break;
+						case "deletePwdFolder":
+							caller.deletePwdFolder();
+							break;
+						case "openPwdFolder":
+							caller.openPwdFolder();
+							break;
+						default:
+							System.err.println("Command not recognized");
+
+					}
+				} else {
+					System.err.println("Please wait for the Admin signature");
+					break;
+				}
+
+			}
+			input = inputUser();
+		}
+	}
+
+	private static void help(Caller caller) {
+		System.out.println("There are the possible operations:");
+		if (caller instanceof Admin) {
+			System.out.println("signUser");
+			System.out.println("removeSignUser");
+			System.out.println("signGroup");
+			System.out.println("removeSignGroup");
+			System.out.println("addUsersToFileSystem");
+			System.out.println("removeUsersFromFileSystem");
+		} else {
+			System.out.println("recreateKeys");
+			System.out.println("mountSystem");
+			System.out.println("listUsers");
+			System.out.println("listGroups");
+			System.out.println("listOwningPwdFolders");
+			System.out.println("createGroup");
+			System.out.println("deleteGroup");
+			System.out.println("addMemberToGroup");
+			System.out.println("removeMemberFromGroup");
+			System.out.println("createPwdFolder");
+			System.out.println("deletePwdFolder");
+			System.out.println("addGroupToPwdFolder");
+			System.out.println("removeGroupFromPwdFolder");
+			System.out.println("openPwdFolder");
+		}
+		System.out.println("exit");
+
+	}
 	static class ExecutionException extends RuntimeException {
 		ExecutionException(String functionName) {
 			super("Unable to execute function " + functionName);
