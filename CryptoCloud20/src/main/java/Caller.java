@@ -15,6 +15,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -401,19 +402,6 @@ class Caller extends User {
 	}
 
 
-	void openPwdFolder() {
-		System.out.println("Enter the name you chose for the PwdFolder");
-		System.out.println("These are the PwdFolder that you own");
-		List<PwdFolder> pwdFolders = listPwdFolders();
-		pwdFolders.forEach(System.out::println);
-		String name = Main.inputUser();
-		PwdFolder pwdFolder = new PwdFolder.PwdFolderBuilder(name).setFromDropbox().build();
-		if (pwdFolders.contains(pwdFolder)) {
-			pwdFolder.open();
-		} else {
-			System.err.println("Operation not permitted");
-		}
-	}
 	void removeGroupsFromPwdFolder() {
 		System.out.println("Enter the name you chose for the PwdFolder");
 		System.out.println("These are the PwdFolder that you own");
@@ -650,15 +638,107 @@ class Caller extends User {
 	}
 
 
+	void createPwdEntry() {
+		System.out.println("These are the PwdFolders that you have access to");
+		List<PwdFolder> pwdFolders = listPwdFolders();
+		pwdFolders.forEach(System.out::println);
+		System.out.println("In which one you want to create the PwdEntry?");
+		PwdFolder pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser()).build();
+		while (!pwdFolders.contains(pwdFolder)) {
+			System.err.println("Please enter a valid PwdFolder");
+			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser()).build();
+		}
+		System.out.println("These are the PwdEntry already inside");
+		pwdFolder = pwdFolders.get(pwdFolders.indexOf(pwdFolder));
+		List<PwdEntry> pwdEntriesInside = pwdFolder.getPwdEntries();
+		pwdEntriesInside.forEach(System.out::println);
+		boolean restart = true;
+		while (restart) {
+			System.out.println("Please enter the username");
+			String username = Main.inputUser();
+			System.out.println("Please enter the system");
+			String system = Main.inputUser();
+			System.out.println("Please enter the password");
+			String password = Main.inputUser();
+			PwdEntry pwdEntry = new PwdEntry(username, password, system, this, pwdFolder);
+			if (!pwdEntriesInside.contains(pwdEntry)) {
+				restart = false;
+				pwdEntry.upload(null);
+
+			} else {
+				System.err.println("PwdEntry already exists");
+			}
+		}
+
+	}
+
+	void modifyPwdEntry() {
+		System.out.println("These are the PwdEntries that you have access to");
+		List<PwdEntry> pwdEntries = listPwdEntries();
+		pwdEntries.forEach(System.out::println);
+		System.out.println("Enter the name of the PwdEntry you want to modify");
+		PwdEntry pwdEntry = new PwdEntry(Main.inputUser());
+		while (!pwdEntries.contains(pwdEntry)) {
+			System.err.println("Please enter a valid PwdEntry");
+			pwdEntry = new PwdEntry(Main.inputUser());
+		}
+		String exname = pwdEntry.getName();
+		pwdEntry = pwdEntries.get(pwdEntries.indexOf(pwdEntry));
+		System.out.println("You want to change the username?(Y/N)");
+		String value = Main.inputUser();
+		if (value.equals("Y")) {
+			System.out.println("Enter the username");
+			pwdEntry.setUsername(Main.inputUser());
+		}
+		System.out.println("You want to change the password?(Y/N)");
+		value = Main.inputUser();
+		if (value.equals("Y")) {
+			System.out.println("Enter the password");
+			pwdEntry.setPassword(Main.inputUser());
+		}
+		pwdEntry.setName(pwdEntry.getUsername() + "@" + pwdEntry.getSystem());
+		pwdEntry.setDate(LocalDateTime.now());
+		pwdEntry.setLastModifier(this);
+		pwdEntry.upload(exname);
+	}
+
+	void showPwdEntry() {
+		System.out.println("These are the PwdEntries that you have access to");
+		List<PwdEntry> pwdEntries = listPwdEntries();
+		pwdEntries.forEach(System.out::println);
+		System.out.println("Enter the name of the PwdEntry you want to read");
+		PwdEntry pwdEntry = new PwdEntry(Main.inputUser());
+		while (!pwdEntries.contains(pwdEntry)) {
+			System.err.println("Please enter a valid PwdEntry");
+			pwdEntry = new PwdEntry(Main.inputUser());
+		}
+		pwdEntries.get(pwdEntries.indexOf(pwdEntry)).read();
+	}
+
+	void deletePwdEntry() {
+		System.out.println("These are the PwdEntries that you have access to");
+		List<PwdEntry> pwdEntries = listPwdEntries();
+		pwdEntries.forEach(System.out::println);
+		System.out.println("Enter the name of the PwdEntry you want to delete");
+		PwdEntry pwdEntry = new PwdEntry(Main.inputUser());
+		while (!pwdEntries.contains(pwdEntry)) {
+			System.err.println("Please enter a valid PwdEntry");
+			pwdEntry = new PwdEntry(Main.inputUser());
+		}
+		pwdEntries.get(pwdEntries.indexOf(pwdEntry)).delete();
+	}
+
 	List<PwdFolder> listPwdFolders() {
 		try {
 			List<PwdFolder> pwdFolders = new ArrayList<>();
 			FileSystem fileSystem = Vault.getPersonalVault().open();
 			if (fileSystem != null) {
-				Files.list(fileSystem.getPath(Vault.MY_PWDFOLDER.toString())).forEach(path ->
-						pwdFolders.add(new PwdFolder.PwdFolderBuilder(path.getFileName().toString()).build()));
-
+				List<String> names = new ArrayList<>();
+				Files.list(fileSystem.getPath(Vault.MY_PWDFOLDER.toString())).forEach(path -> names.add(path.getFileName().toString()));
 				fileSystem.close();
+				names.forEach(name ->
+						pwdFolders.add(new PwdFolder.PwdFolderBuilder(name).setFromDropbox().setPwdEntries().build()));
+
 			} else {
 				throw new Main.ExecutionException("listPwdFolders");
 			}
@@ -707,7 +787,12 @@ class Caller extends User {
 		}
 	}
 
-
+	List<PwdEntry> listPwdEntries() {
+		List<PwdEntry> pwdEntries = new ArrayList<>();
+		listPwdFolders().forEach(pwdFolder ->
+				pwdEntries.addAll(pwdFolder.getPwdEntries()));
+		return pwdEntries;
+	}
 	void createFileSystem() {
 		try {
 			Dropbox.mountFolder(Dropbox.SYSTEM.getFileName());

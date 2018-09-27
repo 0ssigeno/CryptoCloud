@@ -11,6 +11,8 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 
 public class Main {
+	//TODO se l'utente chiede conferma all'admin per la creaione del pwdfolder -> evito duplicati
+	//todo problema: l'admin deve avere accesso a tutti i pwdfolder -> account critico
 	final static Path MY_TEMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
 	final static Path BASE_PATH = Paths.get(System.getProperty("user.home"));
 	final static Path MY_PERSONAL_PATH = BASE_PATH.resolve("CryptoCloud");
@@ -21,7 +23,7 @@ public class Main {
 
 	private static SecretKey secretkey;
 
-	public static SecretKey getSecretkey() {
+	static SecretKey getSecretkey() {
 		if (secretkey == null) {
 			throw new IllegalStateException("SecretKey not initialized.");
 		}
@@ -175,6 +177,9 @@ public class Main {
 						case "listOwningPwdFolders":
 							caller.listPwdFolders().forEach(System.out::println);
 							break;
+						case "listPwdEntries":
+							caller.listPwdEntries().forEach(System.out::println);
+							break;
 						case "createGroup":
 							caller.createGroup();
 							break;
@@ -199,9 +204,19 @@ public class Main {
 						case "deletePwdFolder":
 							caller.deletePwdFolder();
 							break;
-						case "openPwdFolder":
-							caller.openPwdFolder();
+						case "createPwdEntry":
+							caller.createPwdEntry();
 							break;
+						case "showPwdEntry":
+							caller.showPwdEntry();
+							break;
+						case "modifyPwdEntry":
+							caller.modifyPwdEntry();
+							break;
+						case "deletePwdEntry":
+							caller.deletePwdEntry();
+							break;
+
 						default:
 							System.err.println("Command not recognized");
 
@@ -231,6 +246,7 @@ public class Main {
 			System.out.println("listUsers");
 			System.out.println("listGroups");
 			System.out.println("listOwningPwdFolders");
+			System.out.println("listPwdEntries");
 			System.out.println("createGroup");
 			System.out.println("deleteGroup");
 			System.out.println("addMemberToGroup");
@@ -240,6 +256,7 @@ public class Main {
 			System.out.println("addGroupToPwdFolder");
 			System.out.println("removeGroupFromPwdFolder");
 			System.out.println("openPwdFolder");
+			System.out.println("createPwdEntry");
 		}
 		System.out.println("exit");
 

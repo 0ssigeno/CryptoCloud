@@ -163,7 +163,7 @@ public class Group {
 				if (Files.exists(fileSystem.getPath(Vault.SLASH.resolve(this.name).toString()))) {
 					Stream<Path> pathStream = Files.list(fileSystem.getPath(Vault.SLASH.resolve(this.name).toString()));
 					//if(pathStream.findFirst().isPresent()){
-					pathStream.forEach(path -> pwdFolders.add(new PwdFolder.PwdFolderBuilder(path.getFileName().toString()).setFrompath(path, fileSystem).build()));
+					pathStream.forEach(path -> pwdFolders.add(new PwdFolder.PwdFolderBuilder(path.getFileName().toString()).setFromPath(path, fileSystem).build()));
 					//}
 
 				}

@@ -146,6 +146,7 @@ class Vault {
 	@Nullable
 	FileSystem open()  {
 		URI uri = CryptoFileSystemUri.create(pathStorage);
+
 		try {
 			return FileSystems.newFileSystem(
 					uri,
@@ -153,6 +154,7 @@ class Vault {
 							.withPassphrase(password)
 							.build());
 		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 

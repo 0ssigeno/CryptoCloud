@@ -12,10 +12,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.1.0</version>
             </plugin>
         </plugins>
     </build>
@@ -38,6 +44,12 @@
             <artifactId>cryptofs</artifactId>
             <version>1.4.0</version>
         </dependency>
+        <!-- Dependency for JavaTuples -->
+        <dependency>
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+            <version>1.2</version>
+        </dependency>
         <!-- Dependency for SLF4J -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -49,11 +61,6 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.60</version>
-        </dependency>
-        <dependency>
-                <groupId>org.javatuples</groupId>
-                <artifactId>javatuples</artifactId>
-                <version>1.2</version>
         </dependency>
 
     </dependencies>

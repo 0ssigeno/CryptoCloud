@@ -20,12 +20,14 @@ public class PwdFolder {
 	private final User owner;
 	private final Vault vault;
 	private final List<Pair<Group, AccessLevel>> groupsAccesses;
+	private final List<PwdEntry> pwdEntries;
 
 	private PwdFolder(PwdFolderBuilder builder) {
 		this.name = builder.name;
 		this.owner = builder.owner;
 		this.vault = builder.vault;
 		this.groupsAccesses = builder.groupsAccesses;
+		this.pwdEntries = builder.pwdEntries;
 	}
 
 	@Override
@@ -41,6 +43,13 @@ public class PwdFolder {
 		PwdFolder otherMyClass = (PwdFolder) other;
 		return (this.name.equals(otherMyClass.getName()));
 
+	}
+
+	List<PwdEntry> getPwdEntries() {
+		if (pwdEntries == null) {
+			throw new IllegalStateException("PwdEntries not initialized.");
+		}
+		return pwdEntries;
 	}
 
 	User getOwner() {
@@ -122,6 +131,7 @@ public class PwdFolder {
 		});
 		return this;
 	}
+
 
 	//TODO TEST
 	boolean checkIfRemove(Group group, User user) {
@@ -221,26 +231,13 @@ public class PwdFolder {
 
 	}
 
-	void open() {
-		try {
-			System.out.println(this.vault.getPassword());
-			System.out.println(this.vault.getPathStorage());
-			FileSystem fileSystem = this.vault.open();
-			if (fileSystem != null) {
-				//TODO
-				fileSystem.close();
-			}
-
-		} catch (IOException e) {
-			throw new Main.ExecutionException("open", e, this);
-		}
-	}
 
 	static class PwdFolderBuilder {
 		private final String name;
 		private User owner;
 		private Vault vault;
 		private List<Pair<Group, AccessLevel>> groupsAccesses;
+		private List<PwdEntry> pwdEntries;
 
 		PwdFolderBuilder(String name) {
 			this.name = name;
@@ -253,9 +250,28 @@ public class PwdFolder {
 			this.groupsAccesses = groupsAccesses;
 		}
 
+
 		PwdFolderBuilder setOwner(User owner) {
 			this.owner = owner;
 			return this;
+		}
+
+		PwdFolderBuilder setPwdEntries() {
+			try {
+				FileSystem fileSystem = this.vault.open();
+				if (fileSystem != null) {
+					this.pwdEntries = new ArrayList<>();
+					Files.list(fileSystem.getPath("/")).forEach(pwdentry ->
+							pwdEntries.add(new PwdEntry(pwdentry, this)));
+					fileSystem.close();
+				} else {
+					throw new Main.ExecutionException("setPwdEntries");
+				}
+				return this;
+			} catch (IOException e) {
+				throw new Main.ExecutionException("setPwdEntries", e, this);
+			}
+
 		}
 
 		PwdFolderBuilder setFromDropbox() {
@@ -319,7 +335,7 @@ public class PwdFolder {
 			return this;
 		}
 
-		PwdFolderBuilder setFrompath(Path path, FileSystem fileSystem) {
+		PwdFolderBuilder setFromPath(Path path, FileSystem fileSystem) {
 			try {
 				JsonObject jsonObject = new JsonParser().parse(new String(Files.readAllBytes(
 						fileSystem.getPath(path.toString())))).getAsJsonObject();
@@ -331,6 +347,7 @@ public class PwdFolder {
 
 			return this;
 		}
+
 
 		PwdFolder build() {
 			return new PwdFolder(this);
