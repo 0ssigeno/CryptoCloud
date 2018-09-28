@@ -1,3 +1,7 @@
+package Management;
+
+import Execution.Main;
+import Management.Cloud.Dropbox;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
@@ -21,11 +25,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-class Caller extends User {
+public class Caller extends User {
 	private static PublicKey adminPublicKey;
 	private static Path adminMP;
 
-	Caller(UserBuilder userBuilder) {
+	public Caller(User.UserBuilder userBuilder) {
 		super(userBuilder);
 		try {
 			Path path = Dropbox.download(Dropbox.SIGNED_PUBLIC_KEYS, "admin", Main.END_ADMIN);
@@ -56,7 +60,8 @@ class Caller extends User {
 	byte[] generatePkcs1Signature(PrivateKey rsaPrivate, byte[] input) {
 
 		try {
-			Signature signature = Signature.getInstance("SHA384withRSA", "BC");
+			//Signature signature = Signature.getInstance("SHA384withRSA", "BC");
+			Signature signature = Signature.getInstance("SHA384withRSA");
 			signature.initSign(rsaPrivate);
 			signature.update(input);
 			return signature.sign();
@@ -80,7 +85,7 @@ class Caller extends User {
 		}
 	}
 
-	void reCreateKeys() {
+	public void reCreateKeys() {
 		//TODO TEST
 		Path publicKeyPath = Main.MY_PERSONAL_PATH.resolve(getEmail() + Main.END_PUBLIC);
 		Path privateKeyPath = Main.MY_PERSONAL_PATH.resolve(getEmail() + Main.END_PRIVATE);
@@ -313,7 +318,7 @@ class Caller extends User {
 	}
 
 
-	void createPwdFolder() {
+	public void createPwdFolder() {
 		System.out.println("Enter a name for the PwdFolder");
 		String name = Main.inputUser();
 		while (Dropbox.existFile(Dropbox.BASE.resolve(name))) {
@@ -332,7 +337,7 @@ class Caller extends User {
 		Main.success("createPwdFolder");
 	}
 
-	void addGroupsToPwdFolder() {
+	public void addGroupsToPwdFolder() {
 		System.out.println("Enter the name you chose for the PwdFolder");
 		System.out.println("These are the PwdFolder that you own");
 		List<PwdFolder> pwdFolders = listPwdFolders();
@@ -402,7 +407,7 @@ class Caller extends User {
 	}
 
 
-	void removeGroupsFromPwdFolder() {
+	public void removeGroupsFromPwdFolder() {
 		System.out.println("Enter the name you chose for the PwdFolder");
 		System.out.println("These are the PwdFolder that you own");
 		List<PwdFolder> pwdFolders = listPwdFolders();
@@ -462,7 +467,7 @@ class Caller extends User {
 		return groups;
 	}
 
-	void deletePwdFolder() {
+	public void deletePwdFolder() {
 		System.out.println("Enter the name you chose for the PwdFolder");
 		System.out.println("These are the PwdFolder that you own");
 		List<PwdFolder> pwdFolders = listPwdFolders();
@@ -477,7 +482,7 @@ class Caller extends User {
 	}
 
 
-	void createGroup() {
+	public void createGroup() {
 		System.out.println("Enter a name for the Group");
 		List<User> members;
 		String name = Main.inputUser();
@@ -496,7 +501,7 @@ class Caller extends User {
 	}
 
 	//TODO TEST
-	void addMembersToGroup() {
+	public void addMembersToGroup() {
 		System.out.println("Enter the name you chose for the Group");
 		System.out.println("These are the Groups created");
 		listGroups().forEach(System.out::println);
@@ -529,7 +534,7 @@ class Caller extends User {
 		List<User> users = new ArrayList<>();
 		String email = Main.inputUser();
 		while (!email.equals("q")) {
-			UserBuilder userBuilder = new UserBuilder(email);
+			User.UserBuilder userBuilder = new User.UserBuilder(email);
 			if (listUsersBuilder().contains(userBuilder)) {
 				User user = userBuilder.setPublicKey().setVerified().build();
 				user.localDelete();
@@ -559,7 +564,7 @@ class Caller extends User {
 	}
 
 
-	void deleteGroup() {
+	public void deleteGroup() {
 		System.out.println("Enter the name you chose for the Group");
 		System.out.println("These are the Groups created");
 		listGroups().forEach(System.out::println);
@@ -584,7 +589,7 @@ class Caller extends User {
 	}
 
 	//TODO TEST
-	void removeMembersFromGroup() {
+	public void removeMembersFromGroup() {
 		System.out.println("Enter the name you chose for the Group");
 		System.out.println("These are the Groups created");
 		listGroups().forEach(System.out::println);
@@ -613,7 +618,7 @@ class Caller extends User {
 		List<User> users = new ArrayList<>();
 		String email = Main.inputUser();
 		while (!email.equals("q")) {
-			UserBuilder userBuilder = new UserBuilder(email);
+			User.UserBuilder userBuilder = new User.UserBuilder(email);
 			if (listUsersBuilder().contains(userBuilder)) {
 				User user = userBuilder.setPublicKey().setVerified().build();
 				user.localDelete();
@@ -638,7 +643,7 @@ class Caller extends User {
 	}
 
 
-	void createPwdEntry() {
+	public void createPwdEntry() {
 		System.out.println("These are the PwdFolders that you have access to");
 		List<PwdFolder> pwdFolders = listPwdFolders();
 		pwdFolders.forEach(System.out::println);
@@ -672,7 +677,7 @@ class Caller extends User {
 
 	}
 
-	void modifyPwdEntry() {
+	public void modifyPwdEntry() {
 		System.out.println("These are the PwdEntries that you have access to");
 		List<PwdEntry> pwdEntries = listPwdEntries();
 		pwdEntries.forEach(System.out::println);
@@ -702,7 +707,7 @@ class Caller extends User {
 		pwdEntry.upload(exname);
 	}
 
-	void showPwdEntry() {
+	public void showPwdEntry() {
 		System.out.println("These are the PwdEntries that you have access to");
 		List<PwdEntry> pwdEntries = listPwdEntries();
 		pwdEntries.forEach(System.out::println);
@@ -715,7 +720,7 @@ class Caller extends User {
 		pwdEntries.get(pwdEntries.indexOf(pwdEntry)).read();
 	}
 
-	void deletePwdEntry() {
+	public void deletePwdEntry() {
 		System.out.println("These are the PwdEntries that you have access to");
 		List<PwdEntry> pwdEntries = listPwdEntries();
 		pwdEntries.forEach(System.out::println);
@@ -728,7 +733,7 @@ class Caller extends User {
 		pwdEntries.get(pwdEntries.indexOf(pwdEntry)).delete();
 	}
 
-	List<PwdFolder> listPwdFolders() {
+	public List<PwdFolder> listPwdFolders() {
 		try {
 			List<PwdFolder> pwdFolders = new ArrayList<>();
 			FileSystem fileSystem = Vault.getPersonalVault().open();
@@ -748,18 +753,18 @@ class Caller extends User {
 		}
 	}
 
-	List<User> listUsers() {
+	public List<User> listUsers() {
 		List<User> users = new ArrayList<>();
 		listUsersBuilder().forEach(user -> users.add(user.build()));
 		return users;
 	}
 
-	List<UserBuilder> listUsersBuilder() {
+	public List<User.UserBuilder> listUsersBuilder() {
 		try {
-			List<UserBuilder> userStream = new ArrayList<>();
+			List<User.UserBuilder> userStream = new ArrayList<>();
 			Dropbox.getClient().sharing().listFolderMembers(Dropbox
 					.getSharedFolderId(Dropbox.SYSTEM)).getUsers().forEach(s ->
-					userStream.add(new UserBuilder(s.getUser().getEmail()))
+					userStream.add(new User.UserBuilder(s.getUser().getEmail()))
 			);
 			return userStream;
 		} catch (DbxException e) {
@@ -768,7 +773,7 @@ class Caller extends User {
 
 	}
 
-	List<Group> listGroups() {
+	public List<Group> listGroups() {
 		try {
 			List<Group> groupList = new ArrayList<>();
 
@@ -787,13 +792,14 @@ class Caller extends User {
 		}
 	}
 
-	List<PwdEntry> listPwdEntries() {
+	public List<PwdEntry> listPwdEntries() {
 		List<PwdEntry> pwdEntries = new ArrayList<>();
 		listPwdFolders().forEach(pwdFolder ->
 				pwdEntries.addAll(pwdFolder.getPwdEntries()));
 		return pwdEntries;
 	}
-	void createFileSystem() {
+
+	public void createFileSystem() {
 		try {
 			Dropbox.mountFolder(Dropbox.SYSTEM.getFileName());
 			Dropbox.mountFolder(Dropbox.SIGNED_PUBLIC_KEYS.getFileName());
@@ -806,7 +812,7 @@ class Caller extends User {
 
 	}
 
-	void setup() {
+	public void setup() {
 		createFileSystem();
 		uploadPublicKey(Main.MY_PERSONAL_PATH.resolve(getEmail() + Main.END_PUBLIC));
 		Vault.initPersonalStorage(this);

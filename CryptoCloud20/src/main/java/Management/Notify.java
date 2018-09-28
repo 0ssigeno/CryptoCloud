@@ -1,3 +1,7 @@
+package Management;
+
+import Execution.Main;
+import Management.Cloud.Dropbox;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.sharing.AccessLevel;
 import com.google.gson.JsonObject;
@@ -70,6 +74,7 @@ class Notify {
 		}
 		return user;
 	}
+
 	TypeNotification getTypeNotification() {
 		if (typeNotification == null) {
 			throw new IllegalStateException("Type not initialized.");

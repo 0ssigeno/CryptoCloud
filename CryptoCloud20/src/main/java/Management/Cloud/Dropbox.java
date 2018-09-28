@@ -1,3 +1,7 @@
+package Management.Cloud;
+
+import Execution.Main;
+import Management.User;
 import com.dropbox.core.*;
 import com.dropbox.core.http.StandardHttpRequestor;
 import com.dropbox.core.v2.DbxClientV2;
@@ -19,17 +23,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static Management.Cloud.Values.KEY_INFO;
+import static Management.Cloud.Values.SECRET_INFO;
+
 public class Dropbox {
-	static final int CHUNKED_UPLOAD_MAX_ATTEMPTS = 5;
-	final static Path BASE = Paths.get("/");
-	final static Path SYSTEM = Paths.get("/System");
-	final static Path GROUPS_COMPOSITION = SYSTEM.resolve("GroupsComposition");
-	final static Path PUBLIC_KEYS = SYSTEM.resolve("PublicKeys");
-	final static Path SIGNED_GROUPS = SYSTEM.resolve("SignedGroups");
+	public final static Path BASE = Paths.get("/");
 	private static final long CHUNKED_UPLOAD_CHUNK_SIZE = 8L << 20; // 8MiB
-	final static Path MESSAGE_PASSING = SYSTEM.resolve("MessagePassing");
-	final static Path SIGNED_PUBLIC_KEYS = Paths.get("/SignedKeys");
-	final static Path SIGNED_GROUPS_OWNER = Paths.get("/SignedGroupsOwner");
+	public final static Path SYSTEM = Paths.get("/System");
+	public final static Path GROUPS_COMPOSITION = SYSTEM.resolve("GroupsComposition");
+	public final static Path PUBLIC_KEYS = SYSTEM.resolve("PublicKeys");
+	public final static Path SIGNED_GROUPS = SYSTEM.resolve("SignedGroups");
+	public final static Path MESSAGE_PASSING = SYSTEM.resolve("MessagePassing");
+	public final static Path SIGNED_PUBLIC_KEYS = Paths.get("/SignedKeys");
+	public final static Path SIGNED_GROUPS_OWNER = Paths.get("/SignedGroupsOwner");
+	private static final int CHUNKED_UPLOAD_MAX_ATTEMPTS = 5;
 
 	private static String callerEmail;
 	private static DbxClientV2 client;
@@ -41,11 +48,8 @@ public class Dropbox {
 	 * After the authorization the token will be saved in DropBoxToken.json
 	 * If he already configured his account, the token will be only withdrawn.
 	 */
-	static void initDropboxClient() {
+	public static void initDropboxClient() {
 		if (client == null) {
-			//TODO offuscare dati
-			final String KEY_INFO = "x";
-			final String SECRET_INFO = "x";
 			Path url = Main.MY_PERSONAL_PATH.resolve("DropBoxToken.json").toAbsolutePath();
 			DbxRequestConfig requestConfig = new DbxRequestConfig("CryptoClouds");
 
@@ -124,7 +128,7 @@ public class Dropbox {
 	/**
 	 * @return a DbxClientV2 client already initialized
 	 */
-	static DbxClientV2 getClient() {
+	public static DbxClientV2 getClient() {
 		if (client == null) {
 			throw new IllegalStateException("Client not initialized.");
 		}
@@ -134,14 +138,14 @@ public class Dropbox {
 	/**
 	 * @return a DbxClientV2 client already initialized used for polling
 	 */
-	static DbxClientV2 getLongpollClient() {
+	public static DbxClientV2 getLongpollClient() {
 		if (longpollClient == null) {
 			throw new IllegalStateException("LongpollClient not initialized.");
 		}
 		return longpollClient;
 	}
 
-	static String getCallerEmail() {
+	public static String getCallerEmail() {
 		if (callerEmail == null) {
 			try {
 				callerEmail = Dropbox.getClient().users().getCurrentAccount().getEmail();
@@ -153,7 +157,7 @@ public class Dropbox {
 	}
 
 
-	static Path download(Path initialPath, String nameFile, String extension)
+	public static Path download(Path initialPath, String nameFile, String extension)
 			throws IOException, DbxException {
 		Path localPath = Main.MY_TEMP_PATH.resolve(nameFile + extension);
 		FileOutputStream out = new FileOutputStream(localPath.toFile());
@@ -161,7 +165,7 @@ public class Dropbox {
 		return localPath;
 	}
 
-	static void upload(Path localPath, Path uploadedPath) throws IOException, DbxException {
+	public static void upload(Path localPath, Path uploadedPath) throws IOException, DbxException {
 
 		long size = Files.size(localPath);
 
@@ -178,7 +182,7 @@ public class Dropbox {
 
 	}
 
-	static Boolean existFile(Path path) {
+	public static Boolean existFile(Path path) {
 		try {
 			client.files().getMetadata(path.toString());
 			return true;
@@ -189,12 +193,11 @@ public class Dropbox {
 	}
 
 
-
-	static String getSharedFolderId(Path path) throws DbxException {
+	public static String getSharedFolderId(Path path) throws DbxException {
 		return ((FolderMetadata) client.files().getMetadata(path.toString())).getSharedFolderId();
 	}
 
-	static int checkIfAdmin() { //1 true, 0 false, -1 non esiste file
+	public static int checkIfAdmin() { //1 true, 0 false, -1 non esiste file
 		try {
 			if (client.sharing().getFolderMetadata(Dropbox.getSharedFolderId(Dropbox.SYSTEM))
 					.getAccessType().compareTo(AccessLevel.OWNER)==0){
@@ -207,7 +210,7 @@ public class Dropbox {
 	}
 
 
-	static void mountFolder(Path nameFolder) throws DbxException {
+	public static void mountFolder(Path nameFolder) throws DbxException {
 
 		List<SharedFolderMetadata> result = client.sharing().listMountableFoldersBuilder().start().getEntries();
 		for (SharedFolderMetadata x : result) {
@@ -220,7 +223,7 @@ public class Dropbox {
 
 	}
 
-	static void createFolder(Path path, Boolean shared) {
+	public static void createFolder(Path path, Boolean shared) {
 		try {
 			client.files().getMetadata(path.toString());
 		} catch (DbxException e){
@@ -239,7 +242,7 @@ public class Dropbox {
 
 	}
 
-	static void addUsersToFolder(AccessLevel accessLevel, Path path, List<User> users)
+	public static void addUsersToFolder(AccessLevel accessLevel, Path path, List<User> users)
 			throws DbxException {
 		if (client.files().getMetadata(path.toString()).toString().contains("shared_folder_id")) {
 			List<AddMember> newAddMembers = new ArrayList<>();
@@ -253,7 +256,7 @@ public class Dropbox {
 
 	}
 
-	static void removeUsersFromFolder(Path path, List<User> users) throws DbxException {
+	public static void removeUsersFromFolder(Path path, List<User> users) throws DbxException {
 		if (client.files().getMetadata(path.toString()).toString().contains("shared_folder_id")) {
 			users.forEach(user -> {
 				try {

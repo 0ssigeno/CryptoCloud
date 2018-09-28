@@ -1,3 +1,7 @@
+package Management;
+
+import Execution.Main;
+import Management.Cloud.Dropbox;
 import com.dropbox.core.DbxException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -219,14 +223,14 @@ public class Group {
 		}
 
 		private void setAttributes(byte[] content) {
-				JsonParser parser = new JsonParser();
+			JsonParser parser = new JsonParser();
 			JsonObject jsonObject = parser.parse(new String(content)).getAsJsonObject();
-				this.owner = new User
-						.UserBuilder(jsonObject.get(Notify.TypeMemberName.OWNER.toString()).getAsString())
-						.setPublicKey().setVerified().build();
-				this.members = new ArrayList<>();
-				jsonObject.getAsJsonArray(Notify.TypeMemberName.MEMBERS.toString()).forEach(single ->
-						this.members.add(new User.UserBuilder(single.getAsString()).build()));
+			this.owner = new User
+					.UserBuilder(jsonObject.get(Notify.TypeMemberName.OWNER.toString()).getAsString())
+					.setPublicKey().setVerified().build();
+			this.members = new ArrayList<>();
+			jsonObject.getAsJsonArray(Notify.TypeMemberName.MEMBERS.toString()).forEach(single ->
+					this.members.add(new User.UserBuilder(single.getAsString()).build()));
 		}
 
 		GroupBuilder setFromDropbox() {

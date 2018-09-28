@@ -1,3 +1,7 @@
+package Management;
+
+import Execution.Main;
+import Management.Cloud.Dropbox;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.sharing.AccessLevel;
 
@@ -11,7 +15,7 @@ public class Admin extends Caller {
 
 	private final Path OWN_MESSAGE_PASSING = Dropbox.MESSAGE_PASSING.resolve("admin");
 
-	Admin(Caller caller) {
+	public Admin(Caller caller) {
 		super(new UserBuilder(caller.getEmail()).setCaller());
 	}
 
@@ -32,7 +36,7 @@ public class Admin extends Caller {
 
 
 	//todo test
-	void addUsersToFileSystem() {
+	public void addUsersToFileSystem() {
 		List<User> users = new ArrayList<>();
 		System.out.println("Please enter emails of users to add");
 		System.out.println("press 'q' to stop adding users");
@@ -45,7 +49,7 @@ public class Admin extends Caller {
 	}
 
 	//todo test
-	void removeUsersFromFileSystem() {
+	public void removeUsersFromFileSystem() {
 		List<User> users = new ArrayList<>();
 		System.out.println("These are the users already in:");
 		listUsers().forEach(System.out::println);
@@ -90,7 +94,7 @@ public class Admin extends Caller {
 	}
 
 
-	void designGroup() {
+	public void designGroup() {
 		System.out.println("These are the Groups that have a signature");
 		List<Group> groups = listSignedGroups();
 		groups.forEach(System.out::println);
@@ -114,7 +118,7 @@ public class Admin extends Caller {
 	}
 
 
-	void signGroup() {
+	public void signGroup() {
 		System.out.println("These are the Groups without a signature");
 		List<Group> groups = listGroups();
 		groups.removeAll(listSignedGroups());
@@ -151,7 +155,7 @@ public class Admin extends Caller {
 	}
 
 
-	void designUser() {
+	public void designUser() {
 		System.out.println("These are the users that have a signature");
 		List<User> users = listSignedUsers();
 		users.forEach(System.out::println);
@@ -169,7 +173,7 @@ public class Admin extends Caller {
 	private void designUser(User user) {
 		try {
 			Dropbox.getClient().files().deleteV2(Dropbox.SIGNED_PUBLIC_KEYS.resolve(user.getEmail() + Main.END_SIGNED).toString());
-			//Dropbox.getClient().files().deleteV2(Dropbox.PUBLIC_KEYS.resolve(user.getEmail() + Main.END_PUBLIC).toString());
+			//Dropbox.getClient().files().deleteV2(Dropbox.PUBLIC_KEYS.resolve(user.getEmail() + Management.END_PUBLIC).toString());
 
 		} catch (DbxException e) {
 			throw new Main.ExecutionException("designUser", e, this);
@@ -178,7 +182,7 @@ public class Admin extends Caller {
 	}
 
 
-	void signUser() {
+	public void signUser() {
 		System.out.println("These are the users waiting for a signature");
 		List<User> users = listUsers();
 		List<UserBuilder> usersBuilders = listUsersBuilder();
@@ -264,7 +268,7 @@ public class Admin extends Caller {
 		Main.success("Admin.setup");
 	}
 
-	void createFileSystem() {
+	public void createFileSystem() {
 
 		Dropbox.createFolder(Dropbox.SYSTEM, true);
 

@@ -1,5 +1,11 @@
+package Execution;
+
+import Management.Admin;
+import Management.Caller;
+import Management.Cloud.Dropbox;
+import Management.User;
+
 import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,23 +13,22 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
-
+import java.security.PublicKey;
+import java.security.Signature;
 public class Main {
 	//TODO se l'utente chiede conferma all'admin per la creaione del pwdfolder -> evito duplicati
 	//todo problema: l'admin deve avere accesso a tutti i pwdfolder -> account critico
-	final static Path MY_TEMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
-	final static Path BASE_PATH = Paths.get(System.getProperty("user.home"));
-	final static Path MY_PERSONAL_PATH = BASE_PATH.resolve("CryptoCloud");
-	final static String END_PUBLIC = ".public";
-	final static String END_PRIVATE = ".private";
-	final static String END_SIGNED = ".sign";
-	final static String END_ADMIN = ".admin";
+	public final static Path MY_TEMP_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
+	public final static Path BASE_PATH = Paths.get(System.getProperty("user.home"));
+	public final static Path MY_PERSONAL_PATH = BASE_PATH.resolve("CryptoCloud");
+	public final static String END_PUBLIC = ".public";
+	public final static String END_PRIVATE = ".private";
+	public final static String END_SIGNED = ".sign";
+	public final static String END_ADMIN = ".admin";
 
 	private static SecretKey secretkey;
 
-	static SecretKey getSecretkey() {
+	public static SecretKey getSecretkey() {
 		if (secretkey == null) {
 			throw new IllegalStateException("SecretKey not initialized.");
 		}
@@ -32,27 +37,30 @@ public class Main {
 
 	//this is not used for security but to avoid users to mess with files in the dropbox folders
 	private static void initSecretKey() {
-		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
 		byte[] key = "OssigenoCryptoCloudSimon".getBytes();
-		SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
+		secretkey = new SecretKeySpec(key, "AES");
+		/*
 		try {
-			secretkey = SecretKeyFactory.getInstance("AES", "BC").generateSecret(keySpec);
-		} catch (InvalidKeySpecException | NoSuchProviderException | NoSuchAlgorithmException e) {
+		//	secretkey = SecretKeyFactory.getInstance("AES", "BC").generateSecret(keySpec);
+			secretkey = SecretKeyFactory.getInstance("AES").generateSecret(keySpec);
+		} catch (InvalidKeySpecException  |NoSuchProviderException | NoSuchAlgorithmException e) {
 			throw new ExecutionException("initSecretKey", e);
 		}
-
+			*/
 	}
 
-	static void success(String nameFunction) {
+	public static void success(String nameFunction) {
 		System.out.println("Function " + nameFunction + " completed with success.");
 	}
 
-	static boolean verifyPkcs1Signature(PublicKey rsaPublic, byte[] input,
-	                                    byte[] encSignature) {
+	public static boolean verifyPkcs1Signature(PublicKey rsaPublic, byte[] input,
+	                                           byte[] encSignature) {
 		try {
-			Signature signature = Signature.getInstance("SHA384withRSA",
-					"BC");
+			//Signature signature = Signature.getInstance("SHA384withRSA",
+			//		"BC");
+			Signature signature = Signature.getInstance("SHA384withRSA");
+
 			signature.initVerify(rsaPublic);
 			signature.update(input);
 			return signature.verify(encSignature);
@@ -62,7 +70,7 @@ public class Main {
 		}
 	}
 
-	static void deleteLocalFiles(Path... paths) {
+	public static void deleteLocalFiles(Path... paths) {
 		for (Path path : paths) {
 			try {
 				Files.deleteIfExists(path);
@@ -74,7 +82,7 @@ public class Main {
 
 	}
 
-	static String inputUser() {
+	public static String inputUser() {
 		try {
 			String code = new BufferedReader(new InputStreamReader(System.in)).readLine();
 			while (code == null || code.equals("\n") || code.equals("\t")
@@ -90,7 +98,7 @@ public class Main {
 
 	}
 
-	static void deleteDirectory(Path path) {
+	public static void deleteDirectory(Path path) {
 		try {
 			Files.list(path).forEach(pathInternal -> {
 				try {
@@ -107,6 +115,7 @@ public class Main {
 	}
 
 	public static void main(String args[]) {
+//		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
 		Dropbox.initDropboxClient();
 		initSecretKey();
@@ -262,20 +271,20 @@ public class Main {
 
 	}
 
-	static class ExecutionException extends RuntimeException {
-		ExecutionException(String functionName) {
+	public static class ExecutionException extends RuntimeException {
+		public ExecutionException(String functionName) {
 			super("Unable to execute function " + functionName);
 		}
 
-		ExecutionException(String functionName, Throwable cause) {
+		public ExecutionException(String functionName, Throwable cause) {
 			super("Unable to execute function " + functionName, cause);
 		}
 
-		ExecutionException(String functionName, Throwable cause, User caller) {
+		public ExecutionException(String functionName, Throwable cause, User caller) {
 			super("The user " + caller + " was unable to execute function" + functionName, cause);
 		}
 
-		ExecutionException(String functionName, Throwable cause, Object caller) {
+		public ExecutionException(String functionName, Throwable cause, Object caller) {
 			super("The object " + caller.toString() + " was unable to execute function" + functionName, cause);
 		}
 

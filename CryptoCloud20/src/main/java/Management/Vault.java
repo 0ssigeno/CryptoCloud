@@ -1,8 +1,11 @@
+package Management;
+
+import Execution.Main;
+import Management.Cloud.Dropbox;
 import org.cryptomator.cryptofs.CryptoFileSystemProperties;
 import org.cryptomator.cryptofs.CryptoFileSystemProvider;
 import org.cryptomator.cryptofs.CryptoFileSystemUri;
 
-import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import java.io.IOException;
 import java.net.URI;
@@ -79,8 +82,7 @@ class Vault {
 						}
 					}
 
-				}
-				else{
+				} else{
 					System.out.println("Please enter a password: DO NOT FORGET IT");
 					personalVault.password = Main.inputUser();
 					personalVault.create();
@@ -128,8 +130,6 @@ class Vault {
 	}
 
 
-
-
 	void create(){
 		try {
 			Dropbox.createFolder(Dropbox.BASE.resolve(pathStorage.getFileName()), true);
@@ -143,7 +143,6 @@ class Vault {
 
 	}
 
-	@Nullable
 	FileSystem open()  {
 		URI uri = CryptoFileSystemUri.create(pathStorage);
 

@@ -1,3 +1,7 @@
+package Management;
+
+import Execution.Main;
+import Management.Cloud.Dropbox;
 import com.dropbox.core.DbxException;
 
 import java.io.IOException;
@@ -40,10 +44,11 @@ public class User {
 
 	static KeyPair generateKeyPair() {
 		try {
-			KeyPairGenerator keyPair = KeyPairGenerator.getInstance("RSA", "BC");
+			//KeyPairGenerator keyPair = KeyPairGenerator.getInstance("RSA", "BC");
+			KeyPairGenerator keyPair = KeyPairGenerator.getInstance("RSA");
 			keyPair.initialize(new RSAKeyGenParameterSpec(3072, RSAKeyGenParameterSpec.F4));
 			return keyPair.generateKeyPair();
-		} catch (NoSuchAlgorithmException | NoSuchProviderException |
+		} catch (NoSuchAlgorithmException /*| NoSuchProviderException*/ |
 				InvalidAlgorithmParameterException e) {
 			throw new Main.ExecutionException("generateKeyPair", e);
 		}
@@ -52,9 +57,10 @@ public class User {
 
 	static PublicKey importPublic(Path path) throws IOException {
 		try {
-			KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
+			//KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
+			KeyFactory keyFact = KeyFactory.getInstance("RSA");
 			return keyFact.generatePublic(new X509EncodedKeySpec(Files.readAllBytes(path)));
-		} catch (NoSuchAlgorithmException | NoSuchProviderException |
+		} catch (NoSuchAlgorithmException /*| NoSuchProviderException */ |
 				InvalidKeySpecException e) {
 			throw new Main.ExecutionException("importPublic", e);
 		}
@@ -65,9 +71,10 @@ public class User {
 	private static PrivateKey importPrivate(Path path) {
 
 		try {
-			KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
+			//KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
+			KeyFactory keyFact = KeyFactory.getInstance("RSA");
 			return keyFact.generatePrivate(new PKCS8EncodedKeySpec(Files.readAllBytes(path)));
-		} catch (NoSuchAlgorithmException | NoSuchProviderException |
+		} catch (NoSuchAlgorithmException /*| NoSuchProviderException*/ |
 				InvalidKeySpecException | IOException e) {
 			throw new Main.ExecutionException("importPrivate", e);
 		}
@@ -114,18 +121,19 @@ public class User {
 			throw new Main.ExecutionException("removePublicKey", e, this);
 		}
 	}
+
 	void setPublicKey(PublicKey publicKey) {
 		this.publicKey = publicKey;
 	}
 
-	String getEmail() {
+	public String getEmail() {
 		if (email == null) {
 			throw new IllegalStateException("Email not initialized.");
 		}
 		return email;
 	}
 
-	Boolean getVerified() {
+	public Boolean getVerified() {
 		if (verified == null) {
 			throw new IllegalStateException("Verified not initialized.");
 		}
@@ -147,7 +155,7 @@ public class User {
 		private Boolean verified;
 		private PrivateKey privateKey;
 
-		UserBuilder(String email) {
+		public UserBuilder(String email) {
 			this.email = email;
 		}
 
@@ -190,7 +198,7 @@ public class User {
 			return this;
 		}
 
-		UserBuilder setCaller() {
+		public UserBuilder setCaller() {
 			Path publicKeyPath = Main.MY_PERSONAL_PATH.resolve(email + Main.END_PUBLIC);
 			Path privateKeyPath = Main.MY_PERSONAL_PATH.resolve(email + Main.END_PRIVATE);
 
@@ -220,7 +228,7 @@ public class User {
 		}
 
 
-		User build() {
+		public User build() {
 			return new User(this);
 		}
 

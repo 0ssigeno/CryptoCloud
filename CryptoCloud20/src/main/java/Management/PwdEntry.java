@@ -1,3 +1,6 @@
+package Management;
+
+import Execution.Main;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -8,7 +11,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-class PwdEntry {
+public class PwdEntry {
 	private final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
 	private String name;
 	private String username;

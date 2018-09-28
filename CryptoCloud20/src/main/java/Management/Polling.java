@@ -1,3 +1,6 @@
+package Management;
+
+import Management.Cloud.Dropbox;
 import com.dropbox.core.DbxApiException;
 import com.dropbox.core.DbxException;
 import com.dropbox.core.NetworkIOException;
@@ -22,7 +25,7 @@ public class Polling extends Thread {
 		this.caller = caller;
 	}
 
-	public Caller getCaller() {
+	private Caller getCaller() {
 		if (caller == null) {
 			throw new IllegalStateException("Caller not initialized.");
 		}
