@@ -11,15 +11,18 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+//name= username@password@address
 public class PwdEntry {
 	private final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
 	private String name;
 	private String username;
 	private String password;
-	private String system;
+	private String machine;
 	private LocalDateTime date;
 	private User lastModifier;
 	private PwdFolder pwdFolder;
+	private String port;
+	private connectionType connection;
 
 
 	PwdEntry(String name) {
@@ -30,20 +33,23 @@ public class PwdEntry {
 		this.name = path.getFileName().toString();
 		String[] parts = this.name.split("@");
 		this.username = parts[0];
-		this.system = parts[1];
+		this.machine = parts[1];
 		this.pwdFolder = pwdFolderBuilder.build();
 		setFromPath(path);
 
 	}
 
-	PwdEntry(String username, String password, String system, User user, PwdFolder pwdFolder) {
+	PwdEntry(String username, String password, String machine,
+	         User user, PwdFolder pwdFolder, String port, connectionType connection) {
 		this.username = username;
 		this.password = password;
-		this.system = system;
+		this.machine = machine;
 		this.lastModifier = user;
-		this.name = username + "@" + system;
+		this.name = username + "@" + machine;
 		this.date = LocalDateTime.now();
 		this.pwdFolder = pwdFolder;
+		this.port = port;
+		this.connection = connection;
 	}
 
 	@Override
@@ -54,6 +60,14 @@ public class PwdEntry {
 		PwdEntry otherMyClass = (PwdEntry) obj;
 		return (this.name.equals(otherMyClass.getName()));
 
+	}
+
+	public String getPassword() {
+		if (password == null) {
+			throw new IllegalStateException("Password not initialized.");
+
+		}
+		return password;
 	}
 
 	@Override
@@ -73,7 +87,7 @@ public class PwdEntry {
 		this.lastModifier = lastModifier;
 	}
 
-	String getUsername() {
+	public String getUsername() {
 		if (username == null) {
 			throw new IllegalStateException("Username not initialized.");
 
@@ -98,13 +112,30 @@ public class PwdEntry {
 		this.name = name;
 	}
 
-	String getSystem() {
-		if (system == null) {
+	public String getMachine() {
+		if (machine == null) {
 			throw new IllegalStateException("System not initialized.");
 
 		}
-		return system;
+		return machine;
 	}
+
+	public String getPort() {
+		if (port == null) {
+			throw new IllegalStateException("Port not initialized.");
+
+		}
+		return port;
+	}
+
+	public connectionType getConnection() {
+		if (connection == null) {
+			throw new IllegalStateException("Connection not initialized.");
+
+		}
+		return connection;
+	}
+
 
 	void upload(String exName) {
 		try {
@@ -128,10 +159,13 @@ public class PwdEntry {
 
 	void read() {
 		System.out.println("Username: " + username);
-		System.out.println("System: " + system);
+		System.out.println("Machine: " + machine);
 		System.out.println("Password: " + password);
 		System.out.println("Last Modifier: " + lastModifier);
 		System.out.println("Last Date Modified: " + date);
+		System.out.println("Type of connection: " + connection);
+		System.out.println("Port: " + port);
+
 	}
 
 	void delete() {
@@ -153,9 +187,11 @@ public class PwdEntry {
 		String date = this.date.format(this.format);
 		jsonObject.add(jsonValues.DATE.toString(), new JsonParser().parse(date));
 		jsonObject.add(jsonValues.USERNAME.toString(), new JsonParser().parse(username));
-		jsonObject.add(jsonValues.SYSTEM.toString(), new JsonParser().parse(system));
+		jsonObject.add(jsonValues.MACHINE.toString(), new JsonParser().parse(machine));
 		jsonObject.add(jsonValues.PASSWORD.toString(), new JsonParser().parse(password));
 		jsonObject.add(jsonValues.LAST_MODIFIER.toString(), new JsonParser().parse(lastModifier.getEmail()));
+		jsonObject.add(jsonValues.CONNECTION.toString(), new JsonParser().parse(connection.toString()));
+		jsonObject.add(jsonValues.PORT.toString(), new JsonParser().parse(String.valueOf(port)));
 
 
 		return jsonObject;
@@ -167,7 +203,8 @@ public class PwdEntry {
 			this.password = jsonObject.get(jsonValues.PASSWORD.toString()).getAsString();
 			this.date = LocalDateTime.parse(jsonObject.get(jsonValues.DATE.toString()).getAsString(), this.format);
 			this.lastModifier = new User.UserBuilder(jsonObject.get(jsonValues.LAST_MODIFIER.toString()).getAsString()).build();
-
+			this.connection = connectionType.valueOf(jsonObject.get(jsonValues.CONNECTION.toString()).getAsString());
+			this.port = jsonObject.get(jsonValues.PORT.toString()).getAsString();
 		} catch (IOException e) {
 			throw new Main.ExecutionException("setFromPath", e, this);
 		}
@@ -176,9 +213,17 @@ public class PwdEntry {
 	private enum jsonValues {
 		USERNAME,
 		PASSWORD,
-		SYSTEM,
+		MACHINE,
 		DATE,
-		LAST_MODIFIER
+		LAST_MODIFIER,
+		CONNECTION,
+		PORT
 	}
+
+	public enum connectionType {
+		SSH,
+		SFTP
+	}
+
 
 }

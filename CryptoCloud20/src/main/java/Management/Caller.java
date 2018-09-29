@@ -20,10 +20,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class Caller extends User {
 	private static PublicKey adminPublicKey;
@@ -659,13 +656,20 @@ public class Caller extends User {
 		pwdEntriesInside.forEach(System.out::println);
 		boolean restart = true;
 		while (restart) {
+			System.out.println("Please enter the machine");
+			String machine = Main.inputUser();
+			System.out.println("Please enter the type of connection");
+			Arrays.asList(PwdEntry.connectionType.values()).forEach(System.out::println);
+			String connection = Main.inputUser();
+			System.out.println("Please enter the port");
+			String port = Main.inputUser();
 			System.out.println("Please enter the username");
 			String username = Main.inputUser();
-			System.out.println("Please enter the system");
-			String system = Main.inputUser();
 			System.out.println("Please enter the password");
 			String password = Main.inputUser();
-			PwdEntry pwdEntry = new PwdEntry(username, password, system, this, pwdFolder);
+
+			PwdEntry pwdEntry = new PwdEntry(username, password, machine,
+					this, pwdFolder, port, PwdEntry.connectionType.valueOf(connection));
 			if (!pwdEntriesInside.contains(pwdEntry)) {
 				restart = false;
 				pwdEntry.upload(null);
@@ -701,7 +705,7 @@ public class Caller extends User {
 			System.out.println("Enter the password");
 			pwdEntry.setPassword(Main.inputUser());
 		}
-		pwdEntry.setName(pwdEntry.getUsername() + "@" + pwdEntry.getSystem());
+		pwdEntry.setName(pwdEntry.getUsername() + "@" + pwdEntry.getMachine());
 		pwdEntry.setDate(LocalDateTime.now());
 		pwdEntry.setLastModifier(this);
 		pwdEntry.upload(exname);
@@ -733,6 +737,7 @@ public class Caller extends User {
 		pwdEntries.get(pwdEntries.indexOf(pwdEntry)).delete();
 	}
 
+
 	public List<PwdFolder> listPwdFolders() {
 		try {
 			List<PwdFolder> pwdFolders = new ArrayList<>();
@@ -759,7 +764,7 @@ public class Caller extends User {
 		return users;
 	}
 
-	public List<User.UserBuilder> listUsersBuilder() {
+	List<User.UserBuilder> listUsersBuilder() {
 		try {
 			List<User.UserBuilder> userStream = new ArrayList<>();
 			Dropbox.getClient().sharing().listFolderMembers(Dropbox

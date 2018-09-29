@@ -120,6 +120,7 @@ public class Main {
 		Dropbox.initDropboxClient();
 		initSecretKey();
 		Caller caller = new Caller(new User.UserBuilder(Dropbox.getCallerEmail()).setCaller());
+
 		System.out.println("press 0 for admin, 1 for user");
 		int value = Integer.valueOf(Main.inputUser());
 		if (Dropbox.checkIfAdmin() != value) { //settare 0
@@ -130,7 +131,7 @@ public class Main {
 			caller.setup();
 			manageInput(caller);
 		}
-		System.exit(1);
+		//System.exit(1);
 
 	}
 
@@ -159,6 +160,9 @@ public class Main {
 						break;
 					case "removeUsersFromFileSystem":
 						((Admin) caller).removeUsersFromFileSystem();
+						break;
+					case "connect":
+						new Connection(caller).connect();
 						break;
 					default:
 						System.err.println("Command not recognized");
@@ -225,7 +229,8 @@ public class Main {
 						case "deletePwdEntry":
 							caller.deletePwdEntry();
 							break;
-
+						case "connect":
+							new Connection(caller).connect();
 						default:
 							System.err.println("Command not recognized");
 
@@ -243,6 +248,7 @@ public class Main {
 	private static void help(Caller caller) {
 		System.out.println("There are the possible operations:");
 		if (caller instanceof Admin) {
+			System.out.println("connect");
 			System.out.println("signUser");
 			System.out.println("removeSignUser");
 			System.out.println("signGroup");
@@ -250,6 +256,7 @@ public class Main {
 			System.out.println("addUsersToFileSystem");
 			System.out.println("removeUsersFromFileSystem");
 		} else {
+			System.out.println("connect");
 			System.out.println("recreateKeys");
 			System.out.println("mountSystem");
 			System.out.println("listUsers");
