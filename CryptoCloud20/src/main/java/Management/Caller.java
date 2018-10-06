@@ -122,6 +122,7 @@ public class Caller extends User {
 				System.out.println(" GroupRemoved!");
 				notify.getGroupRemoved();
 				if (!Dropbox.existFile(Dropbox.GROUPS_COMPOSITION.resolve(notify.getGroup().getName()))) {
+					//TODO controllare se chi mette la notifica è == user
 					if (this instanceof Admin) {
 						((Admin) this).designGroup(notify.getGroup());
 
@@ -190,6 +191,7 @@ public class Caller extends User {
 
 				try {
 					System.out.print("You received a notification");
+					//Dropbox.getClient().sharing().getFileMetadata().get
 					manageNotification(Paths.get(notify.getPathLower()));
 					Dropbox.getClient().files().deleteV2(notify.getPathLower());
 				} catch (DbxException e) {

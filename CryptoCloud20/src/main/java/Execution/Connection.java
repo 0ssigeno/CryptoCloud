@@ -20,7 +20,6 @@ class Connection {
 	}
 
 	private List<PwdEntry> removeElements(List<PwdEntry> pwdEntryList, String element) {
-		System.out.println("These are the " + element + "s:");
 		List<String> objects = new ArrayList<>();
 		switch (element) {
 			case "username":
@@ -38,17 +37,23 @@ class Connection {
 				});
 				break;
 			default:
-				throw new Main.ExecutionException("removeELements");
+				throw new Main.ExecutionException("removeElements");
 		}
-		objects.forEach(System.out::println);
-		System.out.println("Please enter a " + element);
+		String object;
+		if (objects.size() > 1) {
+			System.out.println("These are the " + element + "s:");
+			objects.forEach(System.out::println);
+			System.out.println("Please enter a " + element);
 
-		String object = Main.inputUser();
-		while (!objects.contains(object)) {
-			System.err.println("Please enter a valid " + element);
 			object = Main.inputUser();
+			while (!objects.contains(object)) {
+				System.err.println("Please enter a valid " + element);
+				object = Main.inputUser();
+			}
+		} else {
+			object = objects.get(0);
+			System.out.println("You can only connect to " + object);
 		}
-
 		String finalObject = object;
 		List<PwdEntry> validPwdEntry = new ArrayList<>();
 		switch (element) {
@@ -67,7 +72,7 @@ class Connection {
 				});
 				break;
 			default:
-				throw new Main.ExecutionException("removeELements");
+				throw new Main.ExecutionException("removeElements");
 		}
 
 		return validPwdEntry;
@@ -83,13 +88,16 @@ class Connection {
 			}
 		}
 		PwdEntry pwdEntry = validPwdEntries.get(0);
-		if (pwdEntry.getConnection().equals(PwdEntry.connectionType.SSH)) {
-			connectToSSH(pwdEntry);
-
-		} else if (pwdEntry.getConnection().equals(PwdEntry.connectionType.SFTP)) {
-			connectToSFTP(pwdEntry);
-		} else {
-			System.err.println("This type of connection is not supported");
+		switch (pwdEntry.getConnection()) {
+			case SFTP:
+				connectToSFTP(pwdEntry);
+				break;
+			case SSH:
+				connectToSSH(pwdEntry);
+				break;
+			default:
+				System.err.println("This type of connection is not supported");
+				break;
 		}
 
 
@@ -107,11 +115,23 @@ class Connection {
 
 			channel.setInputStream(System.in);
 			channel.setOutputStream(System.out);
+			channel.connect(3000);
+			//TODO VOGLIO UN LISTENER IN QUEL THREAD
+			while (channel.isConnected()) {
+				Thread.sleep(5000);
+				//Channel -riga 299
+			}
+			//TODO poichè passo gli stream standard,
+			// TODO quando il thread muore (perchè si, channel in realtà è un fottuto thread)
+			// TODO gli stream vengono chiusi e non si possono riaprire -> fixare non so come
 
-			channel.connect();
-			//TODO ritornare a tutti i comandi, ora praticamente va in System.exit
+
+			System.exit(0);
+
 		} catch (JSchException e) {
-			throw new Main.ExecutionException("SSHconnection", e, this);
+			throw new Main.ExecutionException("SSHConnection", e, this);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
 
