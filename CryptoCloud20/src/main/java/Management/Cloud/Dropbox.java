@@ -65,6 +65,10 @@ public class Dropbox {
 
 				}
 			} else {
+				if (KEY_INFO == null && SECRET_INFO == null) {
+					System.err.println("Please insert the value of your dropbox key and secret in 'Values'");
+
+				}
 				DbxAppInfo appInfo = new DbxAppInfo(KEY_INFO, SECRET_INFO);
 				DbxWebAuth webAuth = new DbxWebAuth(requestConfig, appInfo);
 				DbxWebAuth.Request webAuthRequest = DbxWebAuth.newRequestBuilder()
