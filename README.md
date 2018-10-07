@@ -112,16 +112,17 @@ Usage: connect to ssh or sftp on remote machines
 
 ## Building 
 ### Dependencies
-- Java 8
+- Java 10
 - Maven 3
 - Dropbox sync client [Download](https://www.dropbox.com/downloadin "Download")
 
 ### Run Maven
-Modify  inside src/main/java/Management/Cloud/Values.java KEY_INFO and SECRET_INFO with your key and secret from dropbox developers
+Modify  inside src/main/java/Management/Cloud/Dropbox.java KEY_INFO and SECRET_INFO with your key and secret,obtainable
+[Here](https://www.dropbox.com/developers/apps "Dropbox Developers")
 	
 	$ mvn clean install
 	$ java -jar target/CryptoCloud.jar
 
-Share the jar to the future users of your filesystem 
+Share the jar to your future users
 
 
