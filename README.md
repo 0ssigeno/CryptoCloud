@@ -117,8 +117,8 @@ Usage: connect to ssh or sftp on remote machines
 - Dropbox sync client [Download](https://www.dropbox.com/downloadin "Download")
 
 ### Run Maven
-Modify  inside src/main/java/Management/Cloud/Dropbox.java KEY_INFO and SECRET_INFO with your key and secret,obtainable
-[Here](https://www.dropbox.com/developers/apps "Dropbox Developers")
+Modify  inside src/main/java/Management/Cloud/Dropbox.java KEY_INFO and SECRET_INFO with your key and secret, obtainable
+[here](https://www.dropbox.com/developers/apps "Dropbox Developers")
 	
 	$ mvn clean install
 	$ java -jar target/CryptoCloud.jar
