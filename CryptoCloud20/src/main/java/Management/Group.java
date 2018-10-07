@@ -119,7 +119,7 @@ public class Group {
 			byte[] iv = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 			IvParameterSpec ivspec = new IvParameterSpec(iv);
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-			cipher.init(Cipher.ENCRYPT_MODE, Main.getSecretkey(), ivspec);
+			cipher.init(Cipher.ENCRYPT_MODE, Main.secretkey, ivspec);
 			return cipher.doFinal(bytes);
 
 		} catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException e) {
@@ -268,7 +268,7 @@ public class Group {
 				IvParameterSpec ivspec = new IvParameterSpec(iv);
 
 				Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-				cipher.init(Cipher.DECRYPT_MODE, Main.getSecretkey(), ivspec);
+				cipher.init(Cipher.DECRYPT_MODE, Main.secretkey, ivspec);
 				return cipher.doFinal(bytes);
 
 			} catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException e) {

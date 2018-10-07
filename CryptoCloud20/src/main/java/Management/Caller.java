@@ -75,6 +75,7 @@ public class Caller extends User {
 				Dropbox.upload(publicKeyLocalPath, path);
 				new Notify().setUserCreated(this).encrypt(adminPublicKey)
 						.upload(adminMP).localDelete();
+				Main.successFunction("Upload PublicKey");
 			} catch (IOException | DbxException e) {
 				throw new Main.ExecutionException("uploadPublicKey", e, this);
 
@@ -102,7 +103,7 @@ public class Caller extends User {
 				if (this instanceof Admin) {
 					((Admin) this).signUser(notify.getUserCreated().getUser());
 					notify.getUser().localDelete();
-					Main.success("UserCreatedPolling");
+					Main.successFunction("UserCreated notification");
 				} else {
 					throw new IllegalStateException("You are not an Admin, operation not permitted.");
 				}
@@ -112,8 +113,7 @@ public class Caller extends User {
 				if (this instanceof Admin) {
 					((Admin) this).signGroup(notify.getGroupCreated().getGroup());
 					notify.getGroup().localDelete();
-
-					Main.success("GroupCreatedPolling");
+					Main.successFunction("GroupCreated notification");
 				} else {
 					throw new IllegalStateException("You are not an Admin, operation not permitted.");
 				}
@@ -129,7 +129,7 @@ public class Caller extends User {
 					} else {
 						answerGroupRemoved(notify.getGroup(), notify.getUser(), notify.getPwdFolder());
 					}
-					Main.success("GroupRemovedPolling");
+					Main.successFunction("GroupRemoved notification");
 				} else {
 					System.err.println("Group is still here, discarding notification");
 				}
@@ -140,7 +140,7 @@ public class Caller extends User {
 				answerPwdFolderShared(notify.getPwdFolder(), notify.getGroup(), notify.getAccessLevel(), notify.getPassword());
 				notify.getGroup().localDelete();
 				notify.getPwdFolder().localDelete();
-				Main.success("PwdSharedPolling");
+				Main.successFunction("PwdFolderShared notification");
 				break;
 			case PWDFOLDER_REMOVED:
 				System.out.println(" PwdFolderRemoved!");
@@ -148,7 +148,7 @@ public class Caller extends User {
 				answerPwdFolderRemoved(notify.getGroup(), notify.getPwdFolder());
 				notify.getGroup().localDelete();
 				notify.getPwdFolder().localDelete();
-				Main.success("PwdRemovedPolling");
+				Main.successFunction("PwdFolderRemoved notification");
 				break;
 			case USERS_ADDED_TO_GROUP:
 				System.out.println(" UsersAdded!");
@@ -157,13 +157,16 @@ public class Caller extends User {
 				notify.getGroup().localDelete();
 				notify.getPwdFolder().localDelete();
 				notify.getMembers().forEach(User::localDelete);
-				Main.success("UsersAddedPolling");
+				Main.successFunction("UsersAddedToGroup notification");
 				break;
 			case USERS_REMOVED_FROM_GROUP:
 				System.out.println(" UsersRemoved!");
 				notify.getUsersAddedOrRemoved();
 				answerUsersRemoved(notify.getPwdFolder(), notify.getGroup(), notify.getMembers());
-				Main.success("UsersRemovedPolling");
+				notify.getGroup().localDelete();
+				notify.getPwdFolder().localDelete();
+				notify.getMembers().forEach(User::localDelete);
+				Main.successFunction("UsersRemovedFromGroup notification");
 				break;
 			default:
 				System.out.println(" ,a wrong Notification!");
@@ -307,13 +310,11 @@ public class Caller extends User {
 	//TODO test
 	private void answerUsersRemoved(PwdFolder pwdFolder, Group group, List<User> exUsers) {
 		checkIfAddOrRemove(pwdFolder, group, exUsers, Notify.TypeNotification.USERS_REMOVED_FROM_GROUP);
-		Main.success("answerUsersRemoved");
 	}
 
 	//TODO test TIPO UN BOTTO
 	private void answerUsersAdded(PwdFolder pwdFolder, Group group, List<User> newUsers) {
 		checkIfAddOrRemove(pwdFolder, group, newUsers, Notify.TypeNotification.USERS_ADDED_TO_GROUP);
-		Main.success("answerUsersAdded");
 	}
 
 
@@ -333,7 +334,6 @@ public class Caller extends User {
 		vault.createPassword().create();
 		PwdFolder pwdFolder = new PwdFolder.PwdFolderBuilder(name, this, vault, pairList).build();
 		pwdFolder.upload(this).share(pairList).localDelete();
-		Main.success("createPwdFolder");
 	}
 
 	public void addGroupsToPwdFolder() {
@@ -354,7 +354,6 @@ public class Caller extends User {
 			List<Pair<Group, AccessLevel>> newGroupsAccessLevel = addGroupsToList(alreadyIn);
 			pwdFolder.getGroupsAccesses().addAll(newGroupsAccessLevel);
 			pwdFolder.upload(this).share(newGroupsAccessLevel).localDelete();
-			Main.success("addGroupsToPwdFolder");
 		} else {
 			System.err.println("You are not owner, operation not permitted");
 		}
@@ -428,7 +427,6 @@ public class Caller extends User {
 			});
 			pwdFolder.getGroupsAccesses().removeAll(toRemoveGA);
 			pwdFolder.upload(this).unshare(toRemove).localDelete();
-			Main.success("removeGroupsFromPwdFolder");
 		} else {
 			System.err.println("You are not owner, operation not permitted");
 
@@ -812,7 +810,7 @@ public class Caller extends User {
 			Dropbox.mountFolder(Dropbox.SIGNED_PUBLIC_KEYS.getFileName());
 			Dropbox.mountFolder(Dropbox.SIGNED_GROUPS_OWNER.getFileName());
 			Dropbox.createFolder(Dropbox.MESSAGE_PASSING.resolve(getEmail()), false);
-
+			Main.successFunction("Checking FileSystem");
 		} catch (DbxException e) {
 			throw new Main.ExecutionException("createFileSystem", e, this);
 		}
@@ -824,11 +822,14 @@ public class Caller extends User {
 		uploadPublicKey(Main.MY_PERSONAL_PATH.resolve(getEmail() + Main.END_PUBLIC));
 		Vault.initPersonalStorage(this);
 		if (getVerified()) {
+			System.out.println("Checking if you received new notifications");
 			notificationsWhileAFK(OWN_MESSAGE_PASSING);
+			Main.successFunction("Notifications");
 			Polling polling = new Polling(this.OWN_MESSAGE_PASSING, this);
 			polling.start();
-			System.out.println("A thread is listening for new notifications");
+			Main.successFunction("Listening for new notifications");
+		} else {
+			System.err.println("You need to be verified by the admin");
 		}
-		Main.success("Caller.setup");
 	}
 }

@@ -132,7 +132,6 @@ public class Admin extends Caller {
 			group = new Group.GroupBuilder(input).setFromDropbox().build();
 		}
 		signGroup(group);
-		Main.success("signGroup");
 	}
 
 	void signGroup(Group group) {
@@ -256,16 +255,17 @@ public class Admin extends Caller {
 	public void setup() {
 		if (!Dropbox.existFile(Dropbox.SYSTEM)) {
 			createFileSystem();
-
+			Main.successFunction("FileSystem creation");
 		}
-
 		uploadPublicKey(Main.MY_PERSONAL_PATH.resolve(getEmail() + Main.END_PUBLIC));
-
+		Main.successFunction("PublicKey upload");
+		System.out.println("Checking if you received new notifications");
 		notificationsWhileAFK(OWN_MESSAGE_PASSING);
+		Main.successFunction("Notifications");
 		Polling polling = new Polling(OWN_MESSAGE_PASSING, this);
 		polling.start();
-		System.out.println("A thread is listening for new notifications");
-		Main.success("Admin.setup");
+		Main.successFunction("Listening for new notifications");
+
 	}
 
 	public void createFileSystem() {

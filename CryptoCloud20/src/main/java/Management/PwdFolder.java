@@ -186,8 +186,6 @@ public class PwdFolder {
 			unshareUsers(Collections.singletonList(group.getOwner()), group);
 
 		});
-		Main.success("unshare");
-
 		return this;
 	}
 
@@ -216,7 +214,6 @@ public class PwdFolder {
 			Dropbox.getClient().files().deleteV2(Dropbox.BASE.resolve(name).toString());
 			if (fileSystem != null) {
 				Files.deleteIfExists(fileSystem.getPath(Vault.MY_PWDFOLDER.resolve(name).toString()));
-				Main.success("deletePwdFolder");
 				fileSystem.close();
 			} else {
 				throw new Main.ExecutionException("deletePwdFolder");

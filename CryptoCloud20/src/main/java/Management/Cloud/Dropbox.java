@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static Management.Cloud.Values.KEY_INFO;
-import static Management.Cloud.Values.SECRET_INFO;
 
 public class Dropbox {
+	private static final String KEY_INFO = null;
+	private static final String SECRET_INFO = null;
 	public final static Path BASE = Paths.get("/");
 	private static final long CHUNKED_UPLOAD_CHUNK_SIZE = 8L << 20; // 8MiB
 	public final static Path SYSTEM = Paths.get("/System");
@@ -65,9 +65,10 @@ public class Dropbox {
 
 				}
 			} else {
-				if (KEY_INFO == null && SECRET_INFO == null) {
+				//noinspection ConstantConditions
+				if ((KEY_INFO == null) && (SECRET_INFO == null)) {
 					System.err.println("Please insert the value of your dropbox key and secret in 'Values'");
-
+					System.exit(1);
 				}
 				DbxAppInfo appInfo = new DbxAppInfo(KEY_INFO, SECRET_INFO);
 				DbxWebAuth webAuth = new DbxWebAuth(requestConfig, appInfo);
@@ -125,7 +126,6 @@ public class Dropbox {
 					.build();
 			assert authInfo != null;
 			longpollClient = new DbxClientV2(requestConfigLong, authInfo.getAccessToken(), authInfo.getHost());
-			Main.success("initDropboxClient");
 		}
 	}
 

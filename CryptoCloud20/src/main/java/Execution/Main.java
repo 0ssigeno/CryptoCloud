@@ -4,6 +4,7 @@ import Management.Admin;
 import Management.Caller;
 import Management.Cloud.Dropbox;
 import Management.User;
+import com.dropbox.core.DbxException;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -26,32 +27,13 @@ public class Main {
 	public final static String END_SIGNED = ".sign";
 	public final static String END_ADMIN = ".admin";
 
-	private static SecretKey secretkey;
-
-	public static SecretKey getSecretkey() {
-		if (secretkey == null) {
-			throw new IllegalStateException("SecretKey not initialized.");
-		}
-		return secretkey;
-	}
 
 	//this is not used for security but to avoid users to mess with files in the dropbox folders
-	private static void initSecretKey() {
+	public static SecretKey secretkey = new SecretKeySpec("OssigenoCryptoCloudSimon".getBytes(), "AES");
 
-		byte[] key = "OssigenoCryptoCloudSimon".getBytes();
-		secretkey = new SecretKeySpec(key, "AES");
-		/*
-		try {
-		//	secretkey = SecretKeyFactory.getInstance("AES", "BC").generateSecret(keySpec);
-			secretkey = SecretKeyFactory.getInstance("AES").generateSecret(keySpec);
-		} catch (InvalidKeySpecException  |NoSuchProviderException | NoSuchAlgorithmException e) {
-			throw new ExecutionException("initSecretKey", e);
-		}
-			*/
-	}
 
-	public static void success(String nameFunction) {
-		System.out.println("Function " + nameFunction + " completed with success.");
+	public static void successFunction(String nameFunction) {
+		System.out.println(nameFunction + " completed with success.");
 	}
 
 	public static boolean verifyPkcs1Signature(PublicKey rsaPublic, byte[] input,
@@ -114,28 +96,29 @@ public class Main {
 
 	}
 
-	public static void main(String args[]) {
-//		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-
+	public static void main(String args[]) throws DbxException {
 		Dropbox.initDropboxClient();
-		initSecretKey();
 		Caller caller = new Caller(new User.UserBuilder(Dropbox.getCallerEmail()).setCaller());
-
 		System.out.println("press 0 for admin, 1 for user");
 		int value = Integer.valueOf(Main.inputUser());
-		if (Dropbox.checkIfAdmin() != value) { //settare 0
+		System.out.print("Welcome back ");
+		if (Dropbox.checkIfAdmin() != value) { //TODO settare 0
+			System.out.println("Admin " + Dropbox.getClient().users().getCurrentAccount().getName().getDisplayName());
 			Admin admin = new Admin(caller);
 			admin.setup();
 			manageInput(admin);
 		} else {
+			System.out.println("User " + Dropbox.getClient().users().getCurrentAccount().getName().getDisplayName());
 			caller.setup();
 			manageInput(caller);
 		}
-		//System.exit(1);
+		System.out.println("Goodbye");
+		System.exit(0);
 
 	}
 
 	private static void manageInput(Caller caller) {
+		System.out.println("Please insert your command, 'help' for the list of possibilities");
 		String input = inputUser();
 		while (!input.equals("exit")) {
 			if (caller instanceof Admin) {
@@ -145,24 +128,31 @@ public class Main {
 						break;
 					case "signUser":
 						((Admin) caller).signUser();
+						successFunction("signUser");
 						break;
 					case "removeSignUser":
 						((Admin) caller).designUser();
+						successFunction("removeSignUser");
 						break;
 					case "signGroup":
 						((Admin) caller).signGroup();
+						successFunction("signGroup");
 						break;
 					case "removeSignGroup":
 						((Admin) caller).designGroup();
+						successFunction("removeSignGroup");
 						break;
 					case "addUsersToFileSystem":
 						((Admin) caller).addUsersToFileSystem();
+						successFunction("addUsersToFileSystem");
 						break;
 					case "removeUsersFromFileSystem":
 						((Admin) caller).removeUsersFromFileSystem();
+						successFunction("removeUsersFromFileSystem");
 						break;
 					case "connect":
 						new Connection(caller).connect();
+						successFunction("connect");
 						break;
 					default:
 						System.err.println("Command not recognized");
@@ -177,9 +167,11 @@ public class Main {
 							break;
 						case "recreateKeys":
 							caller.reCreateKeys();
+							successFunction("recreateKeys");
 							break;
 						case "mountSystem":
 							caller.createFileSystem();
+							successFunction("mountSystem");
 							break;
 						case "listUsers":
 							caller.listUsers().forEach(System.out::println);
@@ -195,42 +187,54 @@ public class Main {
 							break;
 						case "createGroup":
 							caller.createGroup();
+							successFunction("createGroup");
 							break;
 						case "addMembersToGroup":
 							caller.addMembersToGroup();
+							successFunction("addMembersToGroup");
 							break;
 						case "removeMembersFromGroup":
 							caller.removeMembersFromGroup();
+							successFunction("removeMembersFromGroup");
 							break;
 						case "deleteGroup":
 							caller.deleteGroup();
+							successFunction("deleteGroup");
 							break;
 						case "createPwdFolder":
 							caller.createPwdFolder();
+							successFunction("createPwdFolder");
 							break;
 						case "addGroupsToPwdFolder":
 							caller.addGroupsToPwdFolder();
+							successFunction("addGroupsToPwdFolder");
 							break;
 						case "removeGroupsFromPwdFolder":
 							caller.removeGroupsFromPwdFolder();
+							successFunction("removeGroupsFromPwdFolder");
 							break;
 						case "deletePwdFolder":
 							caller.deletePwdFolder();
+							successFunction("deletePwdFolder");
 							break;
 						case "createPwdEntry":
 							caller.createPwdEntry();
+							successFunction("createPwdEntry");
 							break;
 						case "showPwdEntry":
 							caller.showPwdEntry();
 							break;
 						case "modifyPwdEntry":
 							caller.modifyPwdEntry();
+							successFunction("modifyPwdEntry");
 							break;
 						case "deletePwdEntry":
 							caller.deletePwdEntry();
+							successFunction("deletePwdEntry");
 							break;
 						case "connect":
 							new Connection(caller).connect();
+							successFunction("connect");
 						default:
 							System.err.println("Command not recognized");
 

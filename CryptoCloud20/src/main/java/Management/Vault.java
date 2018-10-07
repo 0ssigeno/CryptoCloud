@@ -98,17 +98,8 @@ class Vault {
 				throw new Main.ExecutionException("initPersonalStorage",e);
 
 			}
-
-			Main.success("initPersonalStorage");
 		}
 
-	}
-
-	Path getPathStorage() {
-		if (pathStorage == null) {
-			throw new IllegalStateException("PathStorage not initialized.");
-		}
-		return pathStorage;
 	}
 
 	String getPassword() {
