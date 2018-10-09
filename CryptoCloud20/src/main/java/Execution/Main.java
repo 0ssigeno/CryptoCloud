@@ -39,8 +39,6 @@ public class Main {
 	public static boolean verifyPkcs1Signature(PublicKey rsaPublic, byte[] input,
 	                                           byte[] encSignature) {
 		try {
-			//Signature signature = Signature.getInstance("SHA384withRSA",
-			//		"BC");
 			Signature signature = Signature.getInstance("SHA384withRSA");
 
 			signature.initVerify(rsaPublic);
@@ -99,10 +97,8 @@ public class Main {
 	public static void main(String args[]) throws DbxException {
 		Dropbox.initDropboxClient();
 		Caller caller = new Caller(new User.UserBuilder(Dropbox.getCallerEmail()).setCaller());
-		System.out.println("press 0 for admin, 1 for user");
-		int value = Integer.valueOf(Main.inputUser());
 		System.out.print("Welcome back ");
-		if (Dropbox.checkIfAdmin() != value) { //TODO settare 0
+		if (Dropbox.checkIfAdmin() != 0) {
 			System.out.println("Admin " + Dropbox.getClient().users().getCurrentAccount().getName().getDisplayName());
 			Admin admin = new Admin(caller);
 			admin.setup();
@@ -133,6 +129,12 @@ public class Main {
 					case "removeSignUser":
 						((Admin) caller).designUser();
 						successFunction("removeSignUser");
+						break;
+					case "listUsers":
+						caller.listUsers().forEach(System.out::println);
+						break;
+					case "listGroups":
+						caller.listGroups().forEach(System.out::println);
 						break;
 					case "signGroup":
 						((Admin) caller).signGroup();
@@ -253,6 +255,8 @@ public class Main {
 		System.out.println("There are the possible operations:");
 		if (caller instanceof Admin) {
 			System.out.println("connect");
+			System.out.println("listUsers");
+			System.out.println("listGroups");
 			System.out.println("signUser");
 			System.out.println("removeSignUser");
 			System.out.println("signGroup");

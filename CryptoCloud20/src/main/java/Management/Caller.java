@@ -122,7 +122,8 @@ public class Caller extends User {
 				System.out.println(" GroupRemoved!");
 				notify.getGroupRemoved();
 				if (!Dropbox.existFile(Dropbox.GROUPS_COMPOSITION.resolve(notify.getGroup().getName()))) {
-					//TODO controllare se chi mette la notifica è == user
+					//TODO controllare se chi mette la notifica è == user <-- non penso dropbox lo permetta
+
 					if (this instanceof Admin) {
 						((Admin) this).designGroup(notify.getGroup());
 
@@ -169,8 +170,8 @@ public class Caller extends User {
 				Main.successFunction("UsersRemovedFromGroup notification");
 				break;
 			default:
-				System.out.println(" ,a wrong Notification!");
-				System.out.println("Notification is discarded");
+				System.err.println(" ,a wrong Notification!");
+				System.err.println("Notification is discarded");
 
 				break;
 

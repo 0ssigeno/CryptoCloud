@@ -12,10 +12,12 @@ import com.dropbox.core.v2.sharing.AddMember;
 import com.dropbox.core.v2.sharing.MemberSelector;
 import com.dropbox.core.v2.sharing.SharedFolderMetadata;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -79,6 +81,7 @@ public class Dropbox {
 				String authorizeUrl = webAuth.authorize(webAuthRequest);
 				System.out.println("1. Go to " + authorizeUrl);
 				System.out.println("2. Click \"Allow\" (you might have to log in first).");
+				openWebPage(authorizeUrl);
 				System.out.println("3. Copy the authorization code.");
 				System.out.print("Enter the authorization code here: ");
 				String code = Main.inputUser();
@@ -126,6 +129,18 @@ public class Dropbox {
 					.build();
 			assert authInfo != null;
 			longpollClient = new DbxClientV2(requestConfigLong, authInfo.getAccessToken(), authInfo.getHost());
+		}
+	}
+
+	private static void openWebPage(String url) {
+		Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+		if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+			try {
+				desktop.browse(URI.create(url));
+			} catch (Exception e) {
+				throw new Main.ExecutionException("openWebPage", e);
+
+			}
 		}
 	}
 
@@ -203,11 +218,15 @@ public class Dropbox {
 
 	public static int checkIfAdmin() { //1 true, 0 false, -1 non esiste file
 		try {
-			if (client.sharing().getFolderMetadata(Dropbox.getSharedFolderId(Dropbox.SYSTEM))
+			String value = Dropbox.getSharedFolderId(Dropbox.SYSTEM);
+			if (value == null) {
+				return -1;
+			} else if (client.sharing().getFolderMetadata(value)
 					.getAccessType().compareTo(AccessLevel.OWNER)==0){
 				return 1;
+			} else {
+				return 0;
 			}
-			return 0;
 		} catch (DbxException e) {
 			return -1;
 		}
