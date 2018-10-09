@@ -216,29 +216,19 @@ public class Dropbox {
 		return ((FolderMetadata) client.files().getMetadata(path.toString())).getSharedFolderId();
 	}
 
-	public static int checkIfAdmin() { //1 true, 0 false, -1 non esiste file
+	public static boolean isAdmin() { //1 true, 0 false, -1 non esiste file
 		try {
 			if (client.sharing().listMountableFolders().getEntries().stream().anyMatch(folder -> folder.getName().equals("System"))) {
 				//you obtained the shared filesystem in some way
-				String value = Dropbox.getSharedFolderId(Dropbox.SYSTEM);
-				if (value == null) {
-					//was shared but not mounted -> User
-					return 0;
-				} else if (client.sharing().getFolderMetadata(value)
-						.getAccessType().compareTo(AccessLevel.OWNER) == 0) {
-					//mountned and you own it-> admin
-					return 1;
-				} else {
-					//mounted but you don't own it -> user
-					return 0;
-				}
-
+				//you own it -> admin, you don't own it -> user
+				return client.sharing().getFolderMetadata(Dropbox.getSharedFolderId(Dropbox.SYSTEM))
+						.getAccessType().compareTo(AccessLevel.OWNER) == 0;
 			} else {
-				//admin
-				return -1;
+				//not shared --> Admin
+				return true;
 			}
 		} catch (DbxException e) {
-			return -1;
+			throw new Main.ExecutionException("isAdmin", e);
 		}
 	}
 
