@@ -121,7 +121,7 @@ Modify  inside src/main/java/Management/Cloud/Dropbox.java KEY_INFO and SECRET_I
 [here](https://www.dropbox.com/developers/apps "Dropbox Developers")
 	
 	$ mvn clean install
-	$ java -jar target/CryptoCloud.jar
+	$ java -jar target/CryptoCloud-1.0.jar
 
 Share the jar to your future users
 
