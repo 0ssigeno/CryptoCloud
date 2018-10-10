@@ -98,6 +98,7 @@ public class Main {
 		Dropbox.initDropboxClient();
 		Caller caller = new Caller(new User.UserBuilder(Dropbox.getCallerEmail()).setCaller());
 		System.out.print("Welcome back ");
+		caller.createFileSystem();
 		if (Dropbox.isAdmin()) {
 			System.out.println("Admin " + Dropbox.getClient().users().getCurrentAccount().getName().getDisplayName());
 			Admin admin = new Admin(caller);

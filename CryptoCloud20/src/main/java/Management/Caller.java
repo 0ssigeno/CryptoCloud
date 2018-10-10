@@ -811,7 +811,6 @@ public class Caller extends User {
 			Dropbox.mountFolder(Dropbox.SIGNED_PUBLIC_KEYS.getFileName());
 			Dropbox.mountFolder(Dropbox.SIGNED_GROUPS_OWNER.getFileName());
 			Dropbox.createFolder(Dropbox.MESSAGE_PASSING.resolve(getEmail()), false);
-			Main.successFunction("Checking FileSystem");
 		} catch (DbxException e) {
 			throw new Main.ExecutionException("createFileSystem", e, this);
 		}
@@ -820,6 +819,7 @@ public class Caller extends User {
 
 	public void setup() {
 		createFileSystem();
+		Main.successFunction("Checking FileSystem");
 		uploadPublicKey(Main.MY_PERSONAL_PATH.resolve(getEmail() + Main.END_PUBLIC));
 		Vault.initPersonalStorage(this);
 		if (getVerified()) {
