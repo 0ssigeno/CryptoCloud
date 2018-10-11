@@ -35,6 +35,7 @@ public class Admin extends Caller {
 	}
 
 
+
 	//todo test
 	public void addUsersToFileSystem() {
 		List<User> users = new ArrayList<>();
@@ -172,7 +173,6 @@ public class Admin extends Caller {
 	private void designUser(User user) {
 		try {
 			Dropbox.getClient().files().deleteV2(Dropbox.SIGNED_PUBLIC_KEYS.resolve(user.getEmail() + Main.END_SIGNED).toString());
-			//Dropbox.getClient().files().deleteV2(Dropbox.PUBLIC_KEYS.resolve(user.getEmail() + Management.END_PUBLIC).toString());
 
 		} catch (DbxException e) {
 			throw new Main.ExecutionException("designUser", e, this);
@@ -198,7 +198,7 @@ public class Admin extends Caller {
 		signUser(userBuilder.setPublicKey().build());
 	}
 
-	void signUser(User user) { //user ha il parametro publickey settato
+	void signUser(User user) {
 		System.out.println("Are you sure you want to sign the user " + user);
 		System.out.println("That has PublicKey " + user.getPublicKey() + " ?");
 		System.out.println("Press 'Y' for confirmation");
@@ -252,7 +252,7 @@ public class Admin extends Caller {
 	}
 
 
-	public void setup() {
+	public Polling setupAdmin() {
 		if (!Dropbox.existFile(Dropbox.SYSTEM)) {
 			createFileSystem();
 			Main.successFunction("FileSystem creation");
@@ -265,7 +265,7 @@ public class Admin extends Caller {
 		Polling polling = new Polling(OWN_MESSAGE_PASSING, this);
 		polling.start();
 		Main.successFunction("Listening for new notifications");
-
+		return polling;
 	}
 
 	public void createFileSystem() {
@@ -287,6 +287,11 @@ public class Admin extends Caller {
 		Dropbox.createFolder(Dropbox.MESSAGE_PASSING.resolve("admin"), false);
 
 		addUsersToFileSystem();
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 

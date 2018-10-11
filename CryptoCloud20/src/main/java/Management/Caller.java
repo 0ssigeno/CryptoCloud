@@ -28,14 +28,6 @@ public class Caller extends User {
 
 	public Caller(User.UserBuilder userBuilder) {
 		super(userBuilder);
-		try {
-			Path path = Dropbox.download(Dropbox.SIGNED_PUBLIC_KEYS, "admin", Main.END_ADMIN);
-			adminPublicKey = importPublic(path);
-			Main.deleteLocalFiles(path);
-		} catch (IOException | DbxException e) {
-			adminPublicKey = null;
-		}
-		adminMP = Dropbox.MESSAGE_PASSING.resolve("admin");
 	}
 
 
@@ -509,6 +501,7 @@ public class Caller extends User {
 			if (this.equals(group.getOwner())) {
 				List<User> canBeAdded = listUsers();
 				canBeAdded.removeAll(group.getMembers());
+				canBeAdded.remove(group.getOwner());
 				System.out.println("Please insert the emails of the users you want to add, press 'q' to stop");
 				System.out.println("These are the Users that can be added");
 
@@ -817,9 +810,21 @@ public class Caller extends User {
 
 	}
 
+	private void setAdminInfo() {
+		try {
+			Path path = Dropbox.download(Dropbox.SIGNED_PUBLIC_KEYS, "admin", Main.END_ADMIN);
+			adminPublicKey = importPublic(path);
+			Main.deleteLocalFiles(path);
+		} catch (IOException | DbxException e) {
+			adminPublicKey = null;
+		}
+		adminMP = Dropbox.MESSAGE_PASSING.resolve("admin");
+
+	}
 	public void setup() {
 		createFileSystem();
 		Main.successFunction("Checking FileSystem");
+		setAdminInfo();
 		uploadPublicKey(Main.MY_PERSONAL_PATH.resolve(getEmail() + Main.END_PUBLIC));
 		Vault.initPersonalStorage(this);
 		if (getVerified()) {
@@ -832,5 +837,6 @@ public class Caller extends User {
 		} else {
 			System.err.println("You need to be verified by the admin");
 		}
+
 	}
 }

@@ -205,7 +205,7 @@ public class User {
 			try {
 				publicKey = importPublic(publicKeyPath);
 			} catch (IOException e) {
-				System.out.println("Can't find locally, trying to download it");
+				System.out.println("Can't find public key locally, trying to download it");
 				try {
 					publicKey = importPublic(Dropbox.download(Dropbox.PUBLIC_KEYS, email, Main.END_PUBLIC));
 				} catch (IOException | DbxException e1) {

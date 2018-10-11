@@ -3,6 +3,7 @@ package Execution;
 import Management.Admin;
 import Management.Caller;
 import Management.Cloud.Dropbox;
+import Management.Polling;
 import Management.User;
 import com.dropbox.core.DbxException;
 
@@ -97,14 +98,16 @@ public class Main {
 	public static void main(String args[]) throws DbxException {
 		Dropbox.initDropboxClient();
 		Caller caller = new Caller(new User.UserBuilder(Dropbox.getCallerEmail()).setCaller());
-		System.out.print("Welcome back ");
-		caller.createFileSystem();
+		System.out.print("Welcome ");
+		boolean change = false;
 		if (Dropbox.isAdmin()) {
 			System.out.println("Admin " + Dropbox.getClient().users().getCurrentAccount().getName().getDisplayName());
 			Admin admin = new Admin(caller);
-			admin.setup();
-			manageInput(admin);
-		} else {
+			Polling polling = admin.setupAdmin();
+			change = manageInput(admin);
+			polling.shutdown();
+		}
+		if (!Dropbox.isAdmin() || change) {
 			System.out.println("User " + Dropbox.getClient().users().getCurrentAccount().getName().getDisplayName());
 			caller.setup();
 			manageInput(caller);
@@ -114,7 +117,7 @@ public class Main {
 
 	}
 
-	private static void manageInput(Caller caller) {
+	private static boolean manageInput(Caller caller) {
 		System.out.println("Please insert your command, 'help' for the list of possibilities");
 		String input = inputUser();
 		while (!input.equals("exit")) {
@@ -123,6 +126,8 @@ public class Main {
 					case "help":
 						help(caller);
 						break;
+					case "becomeUser":
+						return true;
 					case "signUser":
 						((Admin) caller).signUser();
 						successFunction("signUser");
@@ -152,10 +157,6 @@ public class Main {
 					case "removeUsersFromFileSystem":
 						((Admin) caller).removeUsersFromFileSystem();
 						successFunction("removeUsersFromFileSystem");
-						break;
-					case "connect":
-						new Connection(caller).connect();
-						successFunction("connect");
 						break;
 					default:
 						System.err.println("Command not recognized");
@@ -250,12 +251,13 @@ public class Main {
 			}
 			input = inputUser();
 		}
+		return false;
 	}
 
 	private static void help(Caller caller) {
 		System.out.println("There are the possible operations:");
 		if (caller instanceof Admin) {
-			System.out.println("connect");
+			System.out.println("becomeUser");
 			System.out.println("listUsers");
 			System.out.println("listGroups");
 			System.out.println("signUser");
@@ -274,12 +276,12 @@ public class Main {
 			System.out.println("listPwdEntries");
 			System.out.println("createGroup");
 			System.out.println("deleteGroup");
-			System.out.println("addMemberToGroup");
-			System.out.println("removeMemberFromGroup");
+			System.out.println("addMembersToGroup");
+			System.out.println("removeMembersFromGroup");
 			System.out.println("createPwdFolder");
 			System.out.println("deletePwdFolder");
-			System.out.println("addGroupToPwdFolder");
-			System.out.println("removeGroupFromPwdFolder");
+			System.out.println("addGroupsToPwdFolder");
+			System.out.println("removeGroupsFromPwdFolder");
 			System.out.println("openPwdFolder");
 			System.out.println("createPwdEntry");
 		}

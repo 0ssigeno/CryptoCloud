@@ -14,15 +14,18 @@ public class Polling extends Thread {
 
 	private Path path;
 	private Caller caller;
+	private volatile boolean shutdown;
 
 	private Polling(Polling polling) {
 		this.path = polling.getPath();
 		this.caller = polling.getCaller();
+		this.shutdown = false;
 	}
 
 	Polling(Path path, Caller caller) {
 		this.path = path;
 		this.caller = caller;
+		this.shutdown = false;
 	}
 
 	private Caller getCaller() {
@@ -39,6 +42,9 @@ public class Polling extends Thread {
 		return path;
 	}
 
+	public void shutdown() {
+		shutdown = true;
+	}
 	public void run() {
 
 		long longpollTimeoutSecs = TimeUnit.MINUTES.toSeconds(5);
@@ -48,7 +54,7 @@ public class Polling extends Thread {
 			String cursor = getLatestCursor(path.toString());
 
 
-			while (true) {
+			while (!shutdown) {
 				ListFolderLongpollResult result = Dropbox.getLongpollClient().files()
 						.listFolderLongpoll(cursor, longpollTimeoutSecs);
 
