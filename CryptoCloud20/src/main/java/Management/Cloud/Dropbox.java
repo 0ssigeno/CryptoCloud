@@ -220,6 +220,12 @@ public class Dropbox {
 		try {
 			if (client.sharing().listMountableFolders().getEntries().stream().anyMatch(folder -> folder.getName().equals("System"))) {
 				//you obtained the shared filesystem in some way
+				try {
+					client.files().getMetadata(Dropbox.SYSTEM.toString());
+				} catch (DbxException e) {
+					//if is not mounted -> user
+					return false;
+				}
 				//you own it -> admin, you don't own it -> user
 				return client.sharing().getFolderMetadata(Dropbox.getSharedFolderId(Dropbox.SYSTEM))
 						.getAccessType().compareTo(AccessLevel.OWNER) == 0;
