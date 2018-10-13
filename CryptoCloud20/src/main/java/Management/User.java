@@ -103,11 +103,12 @@ public class User {
 		return privateKey;
 	}
 
+
 	void setPrivateKey(PrivateKey privateKey) {
 		this.privateKey = privateKey;
 	}
 
-	PublicKey getPublicKey() {
+	public PublicKey getPublicKey() {
 		if (publicKey == null) {
 			throw new IllegalStateException("PublicKey not initialized.");
 		}
@@ -169,7 +170,7 @@ public class User {
 
 		}
 
-		UserBuilder setPublicKey() {
+		public UserBuilder setPublicKey() {
 			try {
 				this.publicKey = importPublic(Dropbox.download(Dropbox.PUBLIC_KEYS, email, Main.END_PUBLIC));
 			} catch (IOException | DbxException e) {
@@ -178,7 +179,7 @@ public class User {
 			return this;
 		}
 
-		UserBuilder setVerified() {
+		public UserBuilder setVerified() {
 			if (publicKey != null) {
 				try {
 					Path adminPublic = Dropbox.download(Dropbox.SIGNED_PUBLIC_KEYS,
@@ -186,8 +187,9 @@ public class User {
 					Path signatureFile = Dropbox.download(Dropbox.SIGNED_PUBLIC_KEYS, email, Main.END_SIGNED);
 					byte[] signature = Files.readAllBytes(signatureFile);
 					PublicKey adminKey = importPublic(adminPublic);
-					this.verified = Main.verifyPkcs1Signature(adminKey, adminKey.getEncoded(), signature);
+					this.verified = Main.verifyPkcs1Signature(adminKey, this.publicKey.getEncoded(), signature);
 				} catch (IOException | DbxException e) {
+					e.printStackTrace();
 					this.verified = false;
 				}
 

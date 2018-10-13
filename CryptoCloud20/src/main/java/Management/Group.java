@@ -134,8 +134,6 @@ public class Group {
 				byte[] infoByte = toJSON().toString().getBytes();
 				byte[] encrypted = encrypt(infoByte);
 				Path info = Files.write(Main.MY_TEMP_PATH.resolve(this.name), encrypted);
-
-
 				Path sign = Files.write(Main.MY_TEMP_PATH.resolve(this.name + Main.END_SIGNED),
 						caller.generatePkcs1Signature(owner.getPrivateKey(), infoByte));
 				Dropbox.upload(info, Dropbox.GROUPS_COMPOSITION.resolve(info.getFileName()));

@@ -47,9 +47,7 @@ public class Caller extends User {
 
 
 	byte[] generatePkcs1Signature(PrivateKey rsaPrivate, byte[] input) {
-
 		try {
-			//Signature signature = Signature.getInstance("SHA384withRSA", "BC");
 			Signature signature = Signature.getInstance("SHA384withRSA");
 			signature.initSign(rsaPrivate);
 			signature.update(input);
@@ -836,6 +834,7 @@ public class Caller extends User {
 			Main.successFunction("Listening for new notifications");
 		} else {
 			System.err.println("You need to be verified by the admin");
+			System.exit(0);
 		}
 
 	}

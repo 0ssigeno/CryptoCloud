@@ -95,6 +95,13 @@ public class Main {
 
 	}
 
+	private static void test(String email) {
+		User terry = new User.UserBuilder(email).setPublicKey().setVerified().build();
+		System.out.println(terry.getEmail());
+		System.out.println(terry.getPublicKey());
+		System.out.println(terry.getVerified());
+	}
+
 	public static void main(String args[]) throws DbxException {
 		Dropbox.initDropboxClient();
 		Caller caller = new Caller(new User.UserBuilder(Dropbox.getCallerEmail()).setCaller());
