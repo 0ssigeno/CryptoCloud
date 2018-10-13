@@ -97,17 +97,17 @@ public class Admin extends Caller {
 
 	public void designGroup() {
 		System.out.println("These are the Groups that have a signature");
-		List<Group> groups = listSignedGroups();
+		List<Group.GroupBuilder> groups = listSignedGroups();
 		groups.forEach(System.out::println);
 		System.out.println("Please enter the Group you want to remove the signature");
 		String input = Main.inputUser();
-		Group group = new Group.GroupBuilder(input).build();
+		Group.GroupBuilder group = new Group.GroupBuilder(input);
 		while (!groups.contains(group)) {
 			System.err.println("Please enter a valid Group");
 			input = Main.inputUser();
-			group = new Group.GroupBuilder(input).build();
+			group = new Group.GroupBuilder(input);
 		}
-		designGroup(group);
+		designGroup(group.build());
 	}
 
 	void designGroup(Group group) {
@@ -121,18 +121,19 @@ public class Admin extends Caller {
 
 	public void signGroup() {
 		System.out.println("These are the Groups without a signature");
-		List<Group> groups = listGroups();
+		List<Group.GroupBuilder> groups = listGroups();
 		groups.removeAll(listSignedGroups());
 		groups.forEach(System.out::println);
 		System.out.println("Please enter the Group you want to sign");
 		String input = Main.inputUser();
-		Group group = new Group.GroupBuilder(input).setFromDropbox().build();
+		Group.GroupBuilder group = new Group.GroupBuilder(input);
 		while (!groups.contains(group)) {
 			System.err.println("Please enter a valid Group");
 			input = Main.inputUser();
-			group = new Group.GroupBuilder(input).setFromDropbox().build();
+			group = new Group.GroupBuilder(input);
 		}
-		signGroup(group);
+		Group group1 = group.setFromDropbox().build();
+		signGroup(group1);
 	}
 
 	void signGroup(Group group) {
@@ -223,12 +224,12 @@ public class Admin extends Caller {
 	}
 
 
-	private List<Group> listSignedGroups() {
+	private List<Group.GroupBuilder> listSignedGroups() {
 		try {
-			List<Group> signed = new ArrayList<>();
+			List<Group.GroupBuilder> signed = new ArrayList<>();
 			Dropbox.getClient().files().listFolder(Dropbox.SIGNED_GROUPS_OWNER.toString()).getEntries().forEach(metadata -> {
 				if (metadata.getName().endsWith(Main.END_ADMIN)) {
-					signed.add(new Group.GroupBuilder(metadata.getName().replace(Main.END_ADMIN, "")).build());
+					signed.add(new Group.GroupBuilder(metadata.getName().replace(Main.END_ADMIN, "")));
 				}
 			});
 			return signed;

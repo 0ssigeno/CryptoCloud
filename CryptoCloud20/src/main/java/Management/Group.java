@@ -202,7 +202,7 @@ public class Group {
 
 	}
 
-	static class GroupBuilder {
+	public static class GroupBuilder {
 		private final String name;
 		private User owner;
 		private List<User> members;
@@ -220,6 +220,21 @@ public class Group {
 			//	this.sign=null;
 		}
 
+		@Override
+		public String toString() {
+			return this.name;
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			if (other == null) return false;
+			if (other == this) return true;
+			if (!(other instanceof GroupBuilder)) return false;
+			GroupBuilder otherMyClass = (GroupBuilder) other;
+			return (this.name.equals(otherMyClass.name));
+
+		}
+
 		private void setAttributes(byte[] content) {
 			JsonParser parser = new JsonParser();
 			JsonObject jsonObject = parser.parse(new String(content)).getAsJsonObject();
@@ -228,7 +243,8 @@ public class Group {
 					.setPublicKey().setVerified().build();
 			this.members = new ArrayList<>();
 			jsonObject.getAsJsonArray(Notify.TypeMemberName.MEMBERS.toString()).forEach(single ->
-					this.members.add(new User.UserBuilder(single.getAsString()).build()));
+					//is only needed the publickey because: the user is checked when added to the group
+					this.members.add(new User.UserBuilder(single.getAsString()).setPublicKey().build()));
 		}
 
 		GroupBuilder setFromDropbox() {

@@ -233,7 +233,7 @@ public class PwdFolder {
 	}
 
 
-	static class PwdFolderBuilder {
+	public static class PwdFolderBuilder {
 		private final String name;
 		private User owner;
 		private Vault vault;
@@ -251,6 +251,10 @@ public class PwdFolder {
 			this.groupsAccesses = groupsAccesses;
 		}
 
+		@Override
+		public String toString() {
+			return this.name;
+		}
 
 		PwdFolderBuilder setOwner(User owner) {
 			this.owner = owner;
@@ -352,6 +356,16 @@ public class PwdFolder {
 
 		PwdFolder build() {
 			return new PwdFolder(this);
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			if (other == null) return false;
+			if (other == this) return true;
+			if (!(other instanceof PwdFolderBuilder)) return false;
+			PwdFolderBuilder otherMyClass = (PwdFolderBuilder) other;
+			return (this.name.equals(otherMyClass.name));
+
 		}
 	}
 }

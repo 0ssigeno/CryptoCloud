@@ -34,7 +34,7 @@ public class Main {
 
 
 	public static void successFunction(String nameFunction) {
-		System.out.println(nameFunction + " completed with success.");
+		System.out.println(nameFunction + " completed.");
 	}
 
 	public static boolean verifyPkcs1Signature(PublicKey rsaPublic, byte[] input,
@@ -191,7 +191,10 @@ public class Main {
 							caller.listGroups().forEach(System.out::println);
 							break;
 						case "listOwningPwdFolders":
-							caller.listPwdFolders().forEach(System.out::println);
+							caller.listPwdFoldersOwned().forEach(System.out::println);
+							break;
+						case "listAllPwdFolders":
+							caller.listAllPwdFolders().forEach(System.out::println);
 							break;
 						case "listPwdEntries":
 							caller.listPwdEntries().forEach(System.out::println);
@@ -279,6 +282,7 @@ public class Main {
 			System.out.println("mountSystem");
 			System.out.println("listUsers");
 			System.out.println("listGroups");
+			System.out.println("listAllPwdFolders");
 			System.out.println("listOwningPwdFolders");
 			System.out.println("listPwdEntries");
 			System.out.println("createGroup");
@@ -289,8 +293,9 @@ public class Main {
 			System.out.println("deletePwdFolder");
 			System.out.println("addGroupsToPwdFolder");
 			System.out.println("removeGroupsFromPwdFolder");
-			System.out.println("openPwdFolder");
 			System.out.println("createPwdEntry");
+			System.out.println("modifyPwdEntry");
+			System.out.println("deletePwdEntry");
 		}
 		System.out.println("exit");
 

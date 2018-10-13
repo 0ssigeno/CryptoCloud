@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-//name= username@password@address
+//name= username@password
 public class PwdEntry {
 	private final DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
 	private String name;

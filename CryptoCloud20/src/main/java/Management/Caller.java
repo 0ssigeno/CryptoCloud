@@ -318,7 +318,7 @@ public class Caller extends User {
 		}
 		System.out.println("Enter the name of a group you want to share with, press 'q' for stop");
 		System.out.println("These are the Groups created");
-		listGroups().forEach(group -> System.out.println(group.getName()));
+		listGroups().forEach(System.out::println);
 		List<Pair<Group, AccessLevel>> pairList = addGroupsToList(new ArrayList<>());
 		System.out.println("A random secure password is chosen for the PwdFolder");
 		Vault vault = new Vault(Vault.BASE_PATH.resolve(name));
@@ -330,21 +330,28 @@ public class Caller extends User {
 	public void addGroupsToPwdFolder() {
 		System.out.println("Enter the name you chose for the PwdFolder");
 		System.out.println("These are the PwdFolder that you own");
-		List<PwdFolder> pwdFolders = listPwdFolders();
+		List<PwdFolder.PwdFolderBuilder> pwdFolders = listPwdFoldersOwned();
 		pwdFolders.forEach(System.out::println);
 		String name = Main.inputUser();
-		PwdFolder pwdFolder = new PwdFolder.PwdFolderBuilder(name).setFromDropbox().build();
-		if (this.equals(pwdFolder.getOwner()) && pwdFolders.contains(pwdFolder)) {
-			List<Group> canBeAdded = listGroups();
+		PwdFolder.PwdFolderBuilder pwdFolder = new PwdFolder.PwdFolderBuilder(name);
+		while (!pwdFolders.contains(pwdFolder)) {
+			System.err.println("Please enter a valid PwdFolder");
+			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
+		}
+		PwdFolder pwdFolder1 = pwdFolder.setFromDropbox().build();
+		if (this.equals(pwdFolder1.getOwner())) {
+			List<Group> canBeAdded = new ArrayList<>();
+			//is not necessary to use .setFromDropbox() because they are used only for checking
+			listGroups().forEach(group -> canBeAdded.add(group.build()));
 			List<Group> alreadyIn = new ArrayList<>();
-			pwdFolder.getGroupsAccesses().forEach(pair -> alreadyIn.add(pair.getValue0()));
+			pwdFolder1.getGroupsAccesses().forEach(pair -> alreadyIn.add(pair.getValue0()));
 			canBeAdded.removeAll(alreadyIn);
 			System.out.println("Please insert the Groups  you want to add, press 'q' to stop");
 			System.out.println("These are the Groups that can be added");
 			canBeAdded.forEach(System.out::println);
 			List<Pair<Group, AccessLevel>> newGroupsAccessLevel = addGroupsToList(alreadyIn);
-			pwdFolder.getGroupsAccesses().addAll(newGroupsAccessLevel);
-			pwdFolder.upload(this).share(newGroupsAccessLevel).localDelete();
+			pwdFolder1.getGroupsAccesses().addAll(newGroupsAccessLevel);
+			pwdFolder1.upload(this).share(newGroupsAccessLevel).localDelete();
 		} else {
 			System.err.println("You are not owner, operation not permitted");
 		}
@@ -399,25 +406,30 @@ public class Caller extends User {
 	public void removeGroupsFromPwdFolder() {
 		System.out.println("Enter the name you chose for the PwdFolder");
 		System.out.println("These are the PwdFolder that you own");
-		List<PwdFolder> pwdFolders = listPwdFolders();
+		List<PwdFolder.PwdFolderBuilder> pwdFolders = listPwdFoldersOwned();
 		pwdFolders.forEach(System.out::println);
 		String name = Main.inputUser();
-		PwdFolder pwdFolder = new PwdFolder.PwdFolderBuilder(name).setFromDropbox().build();
-		if (this.equals(pwdFolder.getOwner()) && pwdFolders.contains(pwdFolder)) {
+		PwdFolder.PwdFolderBuilder pwdFolder = new PwdFolder.PwdFolderBuilder(name);
+		while (!pwdFolders.contains(pwdFolder)) {
+			System.err.println("Please enter a valid PwdFolder");
+			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
+		}
+		PwdFolder pwdFolder1 = pwdFolder.setFromDropbox().build();
+		if (this.equals(pwdFolder1.getOwner()) && pwdFolders.contains(pwdFolder)) {
 			List<Group> alreadyIn = new ArrayList<>();
-			pwdFolder.getGroupsAccesses().forEach(pair -> alreadyIn.add(pair.getValue0()));
+			pwdFolder1.getGroupsAccesses().forEach(pair -> alreadyIn.add(pair.getValue0()));
 			System.out.println("Please insert the Groups  you want to remove, press 'q' to stop");
 			System.out.println("These are the Groups that can be removed");
 			alreadyIn.forEach(System.out::println);
 			List<Group> toRemove = removeGroupsFromList(alreadyIn);
 			List<Pair<Group, AccessLevel>> toRemoveGA = new ArrayList<>();
-			pwdFolder.getGroupsAccesses().forEach(pair -> {
+			pwdFolder1.getGroupsAccesses().forEach(pair -> {
 				if (toRemove.contains(pair.getValue0())) {
 					toRemoveGA.add(pair);
 				}
 			});
-			pwdFolder.getGroupsAccesses().removeAll(toRemoveGA);
-			pwdFolder.upload(this).unshare(toRemove).localDelete();
+			pwdFolder1.getGroupsAccesses().removeAll(toRemoveGA);
+			pwdFolder1.upload(this).unshare(toRemove).localDelete();
 		} else {
 			System.err.println("You are not owner, operation not permitted");
 
@@ -458,12 +470,18 @@ public class Caller extends User {
 	public void deletePwdFolder() {
 		System.out.println("Enter the name you chose for the PwdFolder");
 		System.out.println("These are the PwdFolder that you own");
-		List<PwdFolder> pwdFolders = listPwdFolders();
+		List<PwdFolder.PwdFolderBuilder> pwdFolders = listPwdFoldersOwned();
 		pwdFolders.forEach(System.out::println);
 		String name = Main.inputUser();
-		PwdFolder pwdFolder = new PwdFolder.PwdFolderBuilder(name).setFromDropbox().build();
-		if (this.equals(pwdFolder.getOwner()) && pwdFolders.contains(pwdFolder)) {
-			pwdFolder.delete();
+		PwdFolder.PwdFolderBuilder pwdFolder = new PwdFolder.PwdFolderBuilder(name);
+		while (!pwdFolders.contains(pwdFolder)) {
+			System.err.println("Please enter a valid PwdFolder");
+			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
+
+		}
+		PwdFolder pwdFolder1 = pwdFolder.setFromDropbox().build();
+		if (this.equals(pwdFolder1.getOwner())) {
+			pwdFolder1.delete();
 		} else {
 			System.err.println("Operation not permitted");
 		}
@@ -634,17 +652,17 @@ public class Caller extends User {
 
 	public void createPwdEntry() {
 		System.out.println("These are the PwdFolders that you have access to");
-		List<PwdFolder> pwdFolders = listPwdFolders();
+		List<PwdFolder.PwdFolderBuilder> pwdFolders = listAllPwdFolders();
 		pwdFolders.forEach(System.out::println);
 		System.out.println("In which one you want to create the PwdEntry?");
-		PwdFolder pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser()).build();
+		PwdFolder.PwdFolderBuilder pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
 		while (!pwdFolders.contains(pwdFolder)) {
 			System.err.println("Please enter a valid PwdFolder");
-			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser()).build();
+			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
 		}
 		System.out.println("These are the PwdEntry already inside");
-		pwdFolder = pwdFolders.get(pwdFolders.indexOf(pwdFolder));
-		List<PwdEntry> pwdEntriesInside = pwdFolder.getPwdEntries();
+		PwdFolder pwdFolder1 = pwdFolder.setFromDropbox().setPwdEntries().build();
+		List<PwdEntry> pwdEntriesInside = pwdFolder1.getPwdEntries();
 		pwdEntriesInside.forEach(System.out::println);
 		boolean restart = true;
 		while (restart) {
@@ -661,7 +679,7 @@ public class Caller extends User {
 			String password = Main.inputUser();
 
 			PwdEntry pwdEntry = new PwdEntry(username, password, machine,
-					this, pwdFolder, port, PwdEntry.connectionType.valueOf(connection));
+					this, pwdFolder1, port, PwdEntry.connectionType.valueOf(connection));
 			if (!pwdEntriesInside.contains(pwdEntry)) {
 				restart = false;
 				pwdEntry.upload(null);
@@ -730,23 +748,56 @@ public class Caller extends User {
 	}
 
 
-	public List<PwdFolder> listPwdFolders() {
+	public List<PwdFolder.PwdFolderBuilder> listAllPwdFolders() {
 		try {
-			List<PwdFolder> pwdFolders = new ArrayList<>();
+
+			List<PwdFolder.PwdFolderBuilder> pwdFolders = new ArrayList<>();
+			FileSystem fileSystem = Vault.getPersonalVault().open();
+			if (fileSystem != null) {
+				Set<String> names = new HashSet<>();
+				Files.list(fileSystem.getPath(Vault.SLASH.toString())).forEach(directory ->
+						{
+							try {
+								Files.list(fileSystem.getPath(directory.toString())).forEach(file ->
+										names.add(file.getFileName().toString())
+								);
+							} catch (IOException e) {
+								throw new Main.ExecutionException("listPwdFolders");
+							}
+						}
+				);
+				fileSystem.close();
+				//names.forEach(name -> pwdFolders.add(new PwdFolder.PwdFolderBuilder(name).setFromDropbox().setPwdEntries().build()));
+				names.forEach(name -> pwdFolders.add(new PwdFolder.PwdFolderBuilder(name)));
+
+			} else {
+				throw new Main.ExecutionException("listPwdFolders");
+			}
+			return pwdFolders;
+
+		} catch (IOException e) {
+			throw new Main.ExecutionException("listPwdFolders", e, this);
+		}
+	}
+
+
+	public List<PwdFolder.PwdFolderBuilder> listPwdFoldersOwned() {
+		try {
+			List<PwdFolder.PwdFolderBuilder> pwdFolders = new ArrayList<>();
 			FileSystem fileSystem = Vault.getPersonalVault().open();
 			if (fileSystem != null) {
 				List<String> names = new ArrayList<>();
 				Files.list(fileSystem.getPath(Vault.MY_PWDFOLDER.toString())).forEach(path -> names.add(path.getFileName().toString()));
 				fileSystem.close();
 				names.forEach(name ->
-						pwdFolders.add(new PwdFolder.PwdFolderBuilder(name).setFromDropbox().setPwdEntries().build()));
+						pwdFolders.add(new PwdFolder.PwdFolderBuilder(name)));
 
 			} else {
-				throw new Main.ExecutionException("listPwdFolders");
+				throw new Main.ExecutionException("listPwdFoldersOwned");
 			}
 			return pwdFolders;
 		} catch (IOException e) {
-			throw new Main.ExecutionException("listPwdFolders", e, this);
+			throw new Main.ExecutionException("listPwdFoldersOwned", e, this);
 		}
 	}
 
@@ -770,14 +821,15 @@ public class Caller extends User {
 
 	}
 
-	public List<Group> listGroups() {
+
+	public List<Group.GroupBuilder> listGroups() {
 		try {
-			List<Group> groupList = new ArrayList<>();
+			List<Group.GroupBuilder> groupList = new ArrayList<>();
 
 			ListFolderResult result = Dropbox.getClient().files().listFolder(Dropbox.GROUPS_COMPOSITION.toString());
 			while (true) {
 				result.getEntries().forEach(metadata ->
-						groupList.add(new Group.GroupBuilder(metadata.getName()).build()));
+						groupList.add(new Group.GroupBuilder(metadata.getName())));
 				if (!result.getHasMore()) {
 					break;
 				}
@@ -791,8 +843,8 @@ public class Caller extends User {
 
 	public List<PwdEntry> listPwdEntries() {
 		List<PwdEntry> pwdEntries = new ArrayList<>();
-		listPwdFolders().forEach(pwdFolder ->
-				pwdEntries.addAll(pwdFolder.getPwdEntries()));
+		listAllPwdFolders().forEach(pwdFolder ->
+				pwdEntries.addAll(pwdFolder.setPwdEntries().build().getPwdEntries()));
 		return pwdEntries;
 	}
 
