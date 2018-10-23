@@ -101,20 +101,20 @@ Multi-platform command-line storage for sensible data in the cloud, able to conn
 
 ## 3th Party Software Used
 ### Cryptofs
-Usage: encrypt and decrypt PwdFolders 
+Usage: encrypt and decrypt PwdFolders <br>
 [Repository](https://github.com/cryptomator/cryptofs "CryptoFs Homepage")<br>
 ### Dropbox SDK
-Usage: cloud storage service decided to implement
+Usage: cloud storage service decided to implement<br>
 [Repository](https://github.com/dropbox/dropbox-sdk-java "Dropbox Homepage")<br>
 ### Jsch
-Usage: connect to ssh or sftp on remote machines 
+Usage: connect to ssh or sftp on remote machines <br>
 [Homepage](http://www.jcraft.com/jsch/ "Jsch Homepage")<br>
 
 ## Building 
 ### Dependencies
 - Java 10
 - Maven 3
-- Dropbox sync client [Download](https://www.dropbox.com/downloadin "Download")
+- Dropbox sync client, download [here](https://www.dropbox.com/downloading "Download")
 
 ### Run Maven
 Modify  inside src/main/java/Management/Cloud/Dropbox.java KEY_INFO and SECRET_INFO with your key and secret, obtainable
