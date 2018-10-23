@@ -250,7 +250,6 @@ public class Caller extends User {
 
 	}
 
-	//TODO test TIPO UN BOTTO
 	private void checkIfAddOrRemove(PwdFolder pwdFolder, Group group, List<User> userList, Notify.TypeNotification notification) {
 		if (pwdFolder.getOwner().equals(this)) {
 			if (group.getVerified()) {
@@ -298,12 +297,10 @@ public class Caller extends User {
 		}
 	}
 
-	//TODO test
 	private void answerUsersRemoved(PwdFolder pwdFolder, Group group, List<User> exUsers) {
 		checkIfAddOrRemove(pwdFolder, group, exUsers, Notify.TypeNotification.USERS_REMOVED_FROM_GROUP);
 	}
 
-	//TODO test TIPO UN BOTTO
 	private void answerUsersAdded(PwdFolder pwdFolder, Group group, List<User> newUsers) {
 		checkIfAddOrRemove(pwdFolder, group, newUsers, Notify.TypeNotification.USERS_ADDED_TO_GROUP);
 	}
@@ -311,10 +308,10 @@ public class Caller extends User {
 
 	public void createPwdFolder() {
 		System.out.println("Enter a name for the PwdFolder");
-		String name = Main.inputUser();
+		String name = Main.input();
 		while (Dropbox.existFile(Dropbox.BASE.resolve(name))) {
 			System.err.println("Name already exists: please insert a new name");
-			name = Main.inputUser();
+			name = Main.input();
 		}
 		System.out.println("Enter the name of a group you want to share with, press 'q' for stop");
 		System.out.println("These are the Groups created");
@@ -332,11 +329,11 @@ public class Caller extends User {
 		System.out.println("These are the PwdFolder that you own");
 		List<PwdFolder.PwdFolderBuilder> pwdFolders = listPwdFoldersOwned();
 		pwdFolders.forEach(System.out::println);
-		String name = Main.inputUser();
+		String name = Main.input();
 		PwdFolder.PwdFolderBuilder pwdFolder = new PwdFolder.PwdFolderBuilder(name);
 		while (!pwdFolders.contains(pwdFolder)) {
 			System.err.println("Please enter a valid PwdFolder");
-			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
+			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.input());
 		}
 		PwdFolder pwdFolder1 = pwdFolder.setFromDropbox().build();
 		if (this.equals(pwdFolder1.getOwner())) {
@@ -359,7 +356,7 @@ public class Caller extends User {
 
 	private List<Pair<Group, AccessLevel>> addGroupsToList(List<Group> alreadyIn) {
 		List<Pair<Group, AccessLevel>> pairs = new ArrayList<>();
-		String groupName = Main.inputUser();
+		String groupName = Main.input();
 		while (!groupName.equals("q")) {
 			if (Dropbox.existFile(Dropbox.GROUPS_COMPOSITION.resolve(groupName))) {
 				Group group = new Group.GroupBuilder(groupName).setFromDropbox().build();
@@ -367,10 +364,10 @@ public class Caller extends User {
 					if (pairs.stream().noneMatch(pair -> pair.getValue0().equals(group))) {
 						if (!alreadyIn.contains(group)) {
 							System.out.println("Enter 'R' for read access, enter 'W' for write access");
-							String accesslevel = Main.inputUser();
+							String accesslevel = Main.input();
 							while (!accesslevel.equals("R") && !accesslevel.equals("W")) {
 								System.err.println("Please enter 'R' for read access, enter 'W' for write access");
-								accesslevel = Main.inputUser();
+								accesslevel = Main.input();
 							}
 							switch (accesslevel) {
 								case "R":
@@ -397,7 +394,7 @@ public class Caller extends User {
 			} else {
 				System.err.println("Group doesn't exist, select another one");
 			}
-			groupName = Main.inputUser();
+			groupName = Main.input();
 		}
 		return pairs;
 	}
@@ -408,11 +405,11 @@ public class Caller extends User {
 		System.out.println("These are the PwdFolder that you own");
 		List<PwdFolder.PwdFolderBuilder> pwdFolders = listPwdFoldersOwned();
 		pwdFolders.forEach(System.out::println);
-		String name = Main.inputUser();
+		String name = Main.input();
 		PwdFolder.PwdFolderBuilder pwdFolder = new PwdFolder.PwdFolderBuilder(name);
 		while (!pwdFolders.contains(pwdFolder)) {
 			System.err.println("Please enter a valid PwdFolder");
-			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
+			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.input());
 		}
 		PwdFolder pwdFolder1 = pwdFolder.setFromDropbox().build();
 		if (this.equals(pwdFolder1.getOwner()) && pwdFolders.contains(pwdFolder)) {
@@ -438,7 +435,7 @@ public class Caller extends User {
 
 	private List<Group> removeGroupsFromList(List<Group> alreadyIn) {
 		List<Group> groups = new ArrayList<>();
-		String groupName = Main.inputUser();
+		String groupName = Main.input();
 		while (!groupName.equals("q")) {
 			if (Dropbox.existFile(Dropbox.GROUPS_COMPOSITION.resolve(groupName))) {
 				Group group = new Group.GroupBuilder(groupName).setFromDropbox().build();
@@ -462,7 +459,7 @@ public class Caller extends User {
 			} else {
 				System.err.println("Group doesn't exist, select another one");
 			}
-			groupName = Main.inputUser();
+			groupName = Main.input();
 		}
 		return groups;
 	}
@@ -472,11 +469,11 @@ public class Caller extends User {
 		System.out.println("These are the PwdFolder that you own");
 		List<PwdFolder.PwdFolderBuilder> pwdFolders = listPwdFoldersOwned();
 		pwdFolders.forEach(System.out::println);
-		String name = Main.inputUser();
+		String name = Main.input();
 		PwdFolder.PwdFolderBuilder pwdFolder = new PwdFolder.PwdFolderBuilder(name);
 		while (!pwdFolders.contains(pwdFolder)) {
 			System.err.println("Please enter a valid PwdFolder");
-			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
+			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.input());
 
 		}
 		PwdFolder pwdFolder1 = pwdFolder.setFromDropbox().build();
@@ -491,10 +488,10 @@ public class Caller extends User {
 	public void createGroup() {
 		System.out.println("Enter a name for the Group");
 		List<User> members;
-		String name = Main.inputUser();
+		String name = Main.input();
 		while (Dropbox.existFile(Dropbox.GROUPS_COMPOSITION.resolve(name))) {
 			System.err.println("Name already exists: please insert a new name");
-			name = Main.inputUser();
+			name = Main.input();
 		}
 		System.out.println("Please insert the emails of the users you want to add, press 'q' to stop");
 		System.out.println("These are the Users that can be added");
@@ -503,15 +500,14 @@ public class Caller extends User {
 		users.forEach(System.out::println);
 		members = insertUsersInList(Collections.singletonList(this));
 		Group group = new Group.GroupBuilder(name, this, members).build();
-		group.upload(this).localDelete();
+		group.upload(this, true).localDelete();
 	}
 
-	//TODO TEST
 	public void addMembersToGroup() {
 		System.out.println("Enter the name you chose for the Group");
 		System.out.println("These are the Groups created");
 		listGroups().forEach(System.out::println);
-		String name = Main.inputUser();
+		String name = Main.input();
 		Group group = new Group.GroupBuilder(name).setFromDropbox().build();
 		if (group.getVerified()) {
 			if (this.equals(group.getOwner())) {
@@ -525,7 +521,7 @@ public class Caller extends User {
 
 				List<User> newMembers = insertUsersInList(group.getMembers());
 				group.getMembers().addAll(newMembers);
-				group.upload(this).warnAdded(newMembers).localDelete();
+				group.upload(this, false).warnAdded(newMembers).localDelete();
 			} else {
 				System.err.println("You are not owner of the Group");
 
@@ -539,7 +535,7 @@ public class Caller extends User {
 
 	private List<User> insertUsersInList(List<User> in) {
 		List<User> users = new ArrayList<>();
-		String email = Main.inputUser();
+		String email = Main.input();
 		while (!email.equals("q")) {
 			User.UserBuilder userBuilder = new User.UserBuilder(email);
 			if (listUsersBuilder().contains(userBuilder)) {
@@ -565,7 +561,7 @@ public class Caller extends User {
 				System.err.println("User do not exists");
 
 			}
-			email = Main.inputUser();
+			email = Main.input();
 		}
 		return users;
 	}
@@ -575,7 +571,7 @@ public class Caller extends User {
 		System.out.println("Enter the name you chose for the Group");
 		System.out.println("These are the Groups created");
 		listGroups().forEach(System.out::println);
-		String name = Main.inputUser();
+		String name = Main.input();
 		Group group = new Group.GroupBuilder(name).setFromDropbox().build();
 		if (group.getVerified()) {
 			if (this.equals(group.getOwner())) {
@@ -595,12 +591,11 @@ public class Caller extends User {
 
 	}
 
-	//TODO TEST
 	public void removeMembersFromGroup() {
 		System.out.println("Enter the name you chose for the Group");
 		System.out.println("These are the Groups created");
 		listGroups().forEach(System.out::println);
-		String name = Main.inputUser();
+		String name = Main.input();
 		Group group = new Group.GroupBuilder(name).setFromDropbox().build();
 		if (group.getVerified()) {
 			if (this.equals(group.getOwner())) {
@@ -608,7 +603,7 @@ public class Caller extends User {
 				group.getMembers().forEach(System.out::println);
 				List<User> exMembers = removeUsersInList(group.getMembers());
 				group.getMembers().removeAll(exMembers);
-				group.upload(this).warnRemoved(exMembers).localDelete();
+				group.upload(this, false).warnRemoved(exMembers).localDelete();
 			} else {
 				System.err.println("You are not owner of the Group");
 
@@ -623,7 +618,7 @@ public class Caller extends User {
 
 	private List<User> removeUsersInList(List<User> base) {
 		List<User> users = new ArrayList<>();
-		String email = Main.inputUser();
+		String email = Main.input();
 		while (!email.equals("q")) {
 			User.UserBuilder userBuilder = new User.UserBuilder(email);
 			if (listUsersBuilder().contains(userBuilder)) {
@@ -644,7 +639,7 @@ public class Caller extends User {
 				System.err.println("User do not exists");
 
 			}
-			email = Main.inputUser();
+			email = Main.input();
 		}
 		return users;
 	}
@@ -655,10 +650,10 @@ public class Caller extends User {
 		List<PwdFolder.PwdFolderBuilder> pwdFolders = listAllPwdFolders();
 		pwdFolders.forEach(System.out::println);
 		System.out.println("In which one you want to create the PwdEntry?");
-		PwdFolder.PwdFolderBuilder pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
+		PwdFolder.PwdFolderBuilder pwdFolder = new PwdFolder.PwdFolderBuilder(Main.input());
 		while (!pwdFolders.contains(pwdFolder)) {
 			System.err.println("Please enter a valid PwdFolder");
-			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.inputUser());
+			pwdFolder = new PwdFolder.PwdFolderBuilder(Main.input());
 		}
 		System.out.println("These are the PwdEntry already inside");
 		PwdFolder pwdFolder1 = pwdFolder.setFromDropbox().setPwdEntries().build();
@@ -667,16 +662,16 @@ public class Caller extends User {
 		boolean restart = true;
 		while (restart) {
 			System.out.println("Please enter the machine");
-			String machine = Main.inputUser();
+			String machine = Main.input();
 			System.out.println("Please enter the type of connection");
 			Arrays.asList(PwdEntry.connectionType.values()).forEach(System.out::println);
-			String connection = Main.inputUser();
+			String connection = Main.input();
 			System.out.println("Please enter the port");
-			String port = Main.inputUser();
+			String port = Main.input();
 			System.out.println("Please enter the username");
-			String username = Main.inputUser();
+			String username = Main.input();
 			System.out.println("Please enter the password");
-			String password = Main.inputUser();
+			String password = Main.inputPassword();
 
 			PwdEntry pwdEntry = new PwdEntry(username, password, machine,
 					this, pwdFolder1, port, PwdEntry.connectionType.valueOf(connection));
@@ -696,24 +691,24 @@ public class Caller extends User {
 		List<PwdEntry> pwdEntries = listPwdEntries();
 		pwdEntries.forEach(System.out::println);
 		System.out.println("Enter the name of the PwdEntry you want to modify");
-		PwdEntry pwdEntry = new PwdEntry(Main.inputUser());
+		PwdEntry pwdEntry = new PwdEntry(Main.input());
 		while (!pwdEntries.contains(pwdEntry)) {
 			System.err.println("Please enter a valid PwdEntry");
-			pwdEntry = new PwdEntry(Main.inputUser());
+			pwdEntry = new PwdEntry(Main.input());
 		}
 		String exname = pwdEntry.getName();
 		pwdEntry = pwdEntries.get(pwdEntries.indexOf(pwdEntry));
 		System.out.println("You want to change the username?(Y/N)");
-		String value = Main.inputUser();
+		String value = Main.input();
 		if (value.equals("Y")) {
 			System.out.println("Enter the username");
-			pwdEntry.setUsername(Main.inputUser());
+			pwdEntry.setUsername(Main.input());
 		}
-		System.out.println("You want to change the password?(Y/N)");
-		value = Main.inputUser();
-		if (value.equals("Y")) {
+		System.out.println("You want to change the password?(y/N)");
+		value = Main.input();
+		if (value.equals("y")) {
 			System.out.println("Enter the password");
-			pwdEntry.setPassword(Main.inputUser());
+			pwdEntry.setPassword(Main.inputPassword());
 		}
 		pwdEntry.setName(pwdEntry.getUsername() + "@" + pwdEntry.getMachine());
 		pwdEntry.setDate(LocalDateTime.now());
@@ -726,10 +721,10 @@ public class Caller extends User {
 		List<PwdEntry> pwdEntries = listPwdEntries();
 		pwdEntries.forEach(System.out::println);
 		System.out.println("Enter the name of the PwdEntry you want to read");
-		PwdEntry pwdEntry = new PwdEntry(Main.inputUser());
+		PwdEntry pwdEntry = new PwdEntry(Main.input());
 		while (!pwdEntries.contains(pwdEntry)) {
 			System.err.println("Please enter a valid PwdEntry");
-			pwdEntry = new PwdEntry(Main.inputUser());
+			pwdEntry = new PwdEntry(Main.input());
 		}
 		pwdEntries.get(pwdEntries.indexOf(pwdEntry)).read();
 	}
@@ -739,10 +734,10 @@ public class Caller extends User {
 		List<PwdEntry> pwdEntries = listPwdEntries();
 		pwdEntries.forEach(System.out::println);
 		System.out.println("Enter the name of the PwdEntry you want to delete");
-		PwdEntry pwdEntry = new PwdEntry(Main.inputUser());
+		PwdEntry pwdEntry = new PwdEntry(Main.input());
 		while (!pwdEntries.contains(pwdEntry)) {
 			System.err.println("Please enter a valid PwdEntry");
-			pwdEntry = new PwdEntry(Main.inputUser());
+			pwdEntry = new PwdEntry(Main.input());
 		}
 		pwdEntries.get(pwdEntries.indexOf(pwdEntry)).delete();
 	}

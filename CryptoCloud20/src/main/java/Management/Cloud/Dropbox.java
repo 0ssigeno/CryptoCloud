@@ -84,7 +84,7 @@ public class Dropbox {
 				openWebPage(authorizeUrl);
 				System.out.println("3. Copy the authorization code.");
 				System.out.print("Enter the authorization code here: ");
-				String code = Main.inputUser();
+				String code = Main.input();
 
 				DbxAuthFinish authFinish;
 

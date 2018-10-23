@@ -70,7 +70,7 @@ class Vault {
 					boolean flag=true;
 					System.out.println("Please enter the password you chose");
 					while (flag){
-						personalVault.password = Main.inputUser();
+						personalVault.password = Main.inputPassword();
 						FileSystem fileSystem = personalVault.open();
 						if(fileSystem!=null){
 							Files.write(personalVault.pathPassword, encrypt(caller.getPublicKey(), personalVault.getPassword()));
@@ -84,7 +84,7 @@ class Vault {
 
 				} else{
 					System.out.println("Please enter a password: DO NOT FORGET IT");
-					personalVault.password = Main.inputUser();
+					personalVault.password = Main.inputPassword();
 					personalVault.create();
 					FileSystem fileSystem = personalVault.open();
 					if (fileSystem != null) {

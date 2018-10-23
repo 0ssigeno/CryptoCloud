@@ -41,10 +41,10 @@ public class Admin extends Caller {
 		List<User> users = new ArrayList<>();
 		System.out.println("Please enter emails of users to add");
 		System.out.println("press 'q' to stop adding users");
-		String userEmail = Main.inputUser();
+		String userEmail = Main.input();
 		while (!userEmail.equals("q")) {
 			users.add(new UserBuilder(userEmail).build());
-			userEmail = Main.inputUser();
+			userEmail = Main.input();
 		}
 		addUsersToFileSystem(users);
 	}
@@ -56,14 +56,14 @@ public class Admin extends Caller {
 		listUsers().forEach(System.out::println);
 		System.out.println("Please enter emails of users to remove");
 		System.out.println("press 'q' to stop remove users");
-		String userEmail = Main.inputUser();
+		String userEmail = Main.input();
 		List<UserBuilder> userBuilders = listUsersBuilder();
 		UserBuilder userBuilder = new UserBuilder(userEmail);
 		while (!userEmail.equals("q")) {
 			if (userBuilders.contains(userBuilder)) {
 				users.add(userBuilder.build());
 			}
-			userEmail = Main.inputUser();
+			userEmail = Main.input();
 			userBuilder = new UserBuilder(userEmail);
 		}
 		removeUsersFromFileSystem(users);
@@ -100,11 +100,11 @@ public class Admin extends Caller {
 		List<Group.GroupBuilder> groups = listSignedGroups();
 		groups.forEach(System.out::println);
 		System.out.println("Please enter the Group you want to remove the signature");
-		String input = Main.inputUser();
+		String input = Main.input();
 		Group.GroupBuilder group = new Group.GroupBuilder(input);
 		while (!groups.contains(group)) {
 			System.err.println("Please enter a valid Group");
-			input = Main.inputUser();
+			input = Main.input();
 			group = new Group.GroupBuilder(input);
 		}
 		designGroup(group.build());
@@ -125,11 +125,11 @@ public class Admin extends Caller {
 		groups.removeAll(listSignedGroups());
 		groups.forEach(System.out::println);
 		System.out.println("Please enter the Group you want to sign");
-		String input = Main.inputUser();
+		String input = Main.input();
 		Group.GroupBuilder group = new Group.GroupBuilder(input);
 		while (!groups.contains(group)) {
 			System.err.println("Please enter a valid Group");
-			input = Main.inputUser();
+			input = Main.input();
 			group = new Group.GroupBuilder(input);
 		}
 		Group group1 = group.setFromDropbox().build();
@@ -140,7 +140,7 @@ public class Admin extends Caller {
 		System.out.println("Are you sure you want to sign the group " + group);
 		System.out.println("That has as owner" + group.getOwner() + " ?");
 		System.out.println("Press 'Y' for confirmation");
-		if (Main.inputUser().equals("Y")) {
+		if (Main.input().equals("Y")) {
 			try {
 				byte[] sign = generatePkcs1Signature(getPrivateKey(), group.getOwner().getPublicKey().getEncoded());
 				Path pathSign = Files.write(Main.MY_TEMP_PATH.resolve(group.getName() + Main.END_ADMIN), sign);
@@ -161,11 +161,11 @@ public class Admin extends Caller {
 		List<User> users = listSignedUsers();
 		users.forEach(System.out::println);
 		System.out.println("Please enter the user you want to remove the signature");
-		String input = Main.inputUser();
+		String input = Main.input();
 		User user = new UserBuilder(input).build();
 		while (!users.contains(user)) {
 			System.err.println("Please enter a valid User");
-			input = Main.inputUser();
+			input = Main.input();
 			user = new UserBuilder(input).build();
 		}
 		designUser(user);
@@ -189,11 +189,11 @@ public class Admin extends Caller {
 		users.removeAll(listSignedUsers());
 		users.forEach(System.out::println);
 		System.out.println("Please enter the user you want to Sign");
-		String input = Main.inputUser();
+		String input = Main.input();
 		UserBuilder userBuilder = new UserBuilder(input);
 		while (!usersBuilders.contains(userBuilder)) {
 			System.err.println("Please enter a valid User");
-			input = Main.inputUser();
+			input = Main.input();
 			userBuilder = new UserBuilder(input);
 		}
 		signUser(userBuilder.setPublicKey().build());
@@ -203,7 +203,7 @@ public class Admin extends Caller {
 		System.out.println("Are you sure you want to sign the user " + user);
 		System.out.println("That has PublicKey " + user.getPublicKey() + " ?");
 		System.out.println("Press 'Y' for confirmation");
-		if (Main.inputUser().equals("Y")) {
+		if (Main.input().equals("Y")) {
 			try {
 				byte[] sign = generatePkcs1Signature(getPrivateKey(), user.getPublicKey().getEncoded());
 

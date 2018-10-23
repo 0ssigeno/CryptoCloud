@@ -160,7 +160,6 @@ public class PwdEntry {
 	void read() {
 		System.out.println("Username: " + username);
 		System.out.println("Machine: " + machine);
-		System.out.println("Password: " + password);
 		System.out.println("Last Modifier: " + lastModifier);
 		System.out.println("Last Date Modified: " + date);
 		System.out.println("Type of connection: " + connection);

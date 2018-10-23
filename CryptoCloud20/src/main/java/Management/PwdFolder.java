@@ -137,7 +137,6 @@ public class PwdFolder {
 	}
 
 
-	//TODO TEST
 	boolean checkIfRemove(Group group, User user) {
 		List<Group> groups = new ArrayList<>();
 		if (this.getOwner().equals(user)) {

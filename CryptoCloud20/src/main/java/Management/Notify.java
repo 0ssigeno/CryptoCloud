@@ -142,7 +142,6 @@ class Notify {
 		this.password = jsonObject.get(TypeMemberName.PASSWORD.toString()).getAsString();
 	}
 
-	//TODO test
 	void getUsersAddedOrRemoved() {
 		String groupName = jsonObject.get(TypeMemberName.GROUP.toString()).getAsString();
 		String pwdFolderName = jsonObject.get(TypeMemberName.PWDFOLDER.toString()).getAsString();
@@ -200,7 +199,6 @@ class Notify {
 		return this;
 	}
 
-	//TODO test
 	Notify setUsersAddedOrRemoved(Group group, PwdFolder pwdFolder, List<User> userList, TypeNotification typeNotification) {
 		this.typeNotification = typeNotification;
 		this.group = group;

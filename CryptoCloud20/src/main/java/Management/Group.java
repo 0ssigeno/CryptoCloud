@@ -128,18 +128,21 @@ public class Group {
 
 	}
 
-	Group upload(Caller caller) {
+	Group upload(Caller caller, boolean notifyAdmin) {
 		try {
 			if (caller.equals(this.owner)) {
 				byte[] infoByte = toJSON().toString().getBytes();
 				byte[] encrypted = encrypt(infoByte);
 				Path info = Files.write(Main.MY_TEMP_PATH.resolve(this.name), encrypted);
 				Path sign = Files.write(Main.MY_TEMP_PATH.resolve(this.name + Main.END_SIGNED),
-						caller.generatePkcs1Signature(owner.getPrivateKey(), infoByte));
+						caller.generatePkcs1Signature(caller.getPrivateKey(), infoByte));
 				Dropbox.upload(info, Dropbox.GROUPS_COMPOSITION.resolve(info.getFileName()));
 				Dropbox.upload(sign, Dropbox.SIGNED_GROUPS.resolve(sign.getFileName()));
-				new Notify().setGroupCreated(caller, this)
-						.encrypt(Caller.getAdminPublicKey()).upload(Caller.getAdminMP()).localDelete();
+				if (notifyAdmin) {
+					new Notify().setGroupCreated(caller, this)
+							.encrypt(Caller.getAdminPublicKey()).upload(Caller.getAdminMP()).localDelete();
+				}
+
 			}
 		} catch (IOException | DbxException e) {
 			throw new Main.ExecutionException("upload", e, this);
@@ -147,7 +150,6 @@ public class Group {
 		return this;
 	}
 
-	//TODO TEST
 	Group warnAdded(List<User> newUsers) {
 		//invia una notifica ad ogni owner di ogni pwdFolder che è condiviso con il gruppo
 		pwdFoldersShared().forEach(pwdFolder ->
@@ -179,9 +181,7 @@ public class Group {
 		}
 	}
 
-	//TODO TEST
 	Group warnRemoved(List<User> exUsers) {
-
 		//invia una notifica ad ogni owner di ogni pwdFolder che è condiviso con il gruppo
 		pwdFoldersShared().forEach(pwdFolder ->
 				new Notify().setUsersAddedOrRemoved(this, pwdFolder, exUsers, Notify.TypeNotification.USERS_REMOVED_FROM_GROUP)
@@ -217,7 +217,6 @@ public class Group {
 			this.owner = owner;
 			this.members = members;
 			this.verified = false;
-			//	this.sign=null;
 		}
 
 		@Override

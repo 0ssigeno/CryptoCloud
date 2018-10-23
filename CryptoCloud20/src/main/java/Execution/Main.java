@@ -63,36 +63,60 @@ public class Main {
 
 	}
 
-	public static String inputUser() {
+	public static String inputPassword() {
+		String code;
+		if (System.console() != null) {
+			char[] chars = System.console().readPassword();
+			code = new String(chars);
+		} else {
+			try {
+				code = new BufferedReader(new InputStreamReader(System.in)).readLine();
+			} catch (IOException e) {
+				throw new Main.ExecutionException("verifySignature", e);
+			}
+
+		}
+		while (code == null || code.equals("\n") || code.equals("\t")
+				|| code.equals("")) {
+			System.out.println("Please write something");
+			code = inputPassword();
+		}
+		code = code.trim();
+		return code;
+
+	}
+
+	public static String input() {
 		try {
 			String code = new BufferedReader(new InputStreamReader(System.in)).readLine();
 			while (code == null || code.equals("\n") || code.equals("\t")
 					|| code.equals("")) {
 				System.out.println("Please write something");
-				code = inputUser();
+				code = input();
 			}
 			code = code.trim();
 			return code;
 		} catch (IOException e) {
-			throw new ExecutionException("inputUser", e);
+			throw new ExecutionException("input", e);
 		}
 
 	}
 
 	public static void deleteDirectory(Path path) {
-		try {
-			Files.list(path).forEach(pathInternal -> {
-				try {
-					Files.deleteIfExists(pathInternal);
-				} catch (IOException e) {
-					throw new Main.ExecutionException("delete");
-				}
-			});
-			Files.deleteIfExists(path);
-		} catch (IOException e) {
-			throw new Main.ExecutionException("deleteDirectory");
+		if (Files.exists(path)) {
+			try {
+				Files.list(path).forEach(pathInternal -> {
+					try {
+						Files.deleteIfExists(pathInternal);
+					} catch (IOException e) {
+						throw new Main.ExecutionException("delete", e);
+					}
+				});
+				Files.deleteIfExists(path);
+			} catch (IOException e) {
+				throw new Main.ExecutionException("deleteDirectory", e);
+			}
 		}
-
 	}
 
 	private static void test(String email) {
@@ -115,7 +139,7 @@ public class Main {
 			polling.shutdown();
 		}
 		if (!Dropbox.isAdmin() || change) {
-			System.out.println("User " + Dropbox.getClient().users().getCurrentAccount().getName().getDisplayName());
+			System.out.println(Dropbox.getClient().users().getCurrentAccount().getName().getDisplayName());
 			caller.setup();
 			manageInput(caller);
 		}
@@ -126,7 +150,7 @@ public class Main {
 
 	private static boolean manageInput(Caller caller) {
 		System.out.println("Please insert your command, 'help' for the list of possibilities");
-		String input = inputUser();
+		String input = input();
 		while (!input.equals("exit")) {
 			if (caller instanceof Admin) {
 				switch (input) {
@@ -259,7 +283,7 @@ public class Main {
 				}
 
 			}
-			input = inputUser();
+			input = input();
 		}
 		return false;
 	}

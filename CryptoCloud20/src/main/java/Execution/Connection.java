@@ -45,10 +45,10 @@ class Connection {
 			objects.forEach(System.out::println);
 			System.out.println("Please enter a " + element);
 
-			object = Main.inputUser();
+			object = Main.input();
 			while (!objects.contains(object)) {
 				System.err.println("Please enter a valid " + element);
-				object = Main.inputUser();
+				object = Main.input();
 			}
 		} else {
 			object = objects.get(0);
